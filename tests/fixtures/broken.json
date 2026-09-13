@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-13T12:05:00+00:00",
+  "host": {"hostname": "lab-router", "platform": "Linux"},
+  "network": {
+    "dns_servers": [],
+    "interfaces": [
+      {"name": "eth0", "state": "DOWN", "addresses": []}
+    ],
+    "routes": [],
+    "probes": [{"host": "1.1.1.1", "reachable": false, "average_latency_ms": null}]
+  },
+  "system": {"failed_services": ["systemd-networkd.service"]}
+}
+

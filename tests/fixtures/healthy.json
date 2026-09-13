@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-13T12:00:00+00:00",
+  "host": {"hostname": "lab-router", "platform": "Linux"},
+  "network": {
+    "dns_servers": ["10.10.10.1"],
+    "interfaces": [
+      {"name": "eth0", "state": "UP", "addresses": [{"family": "inet", "local": "10.10.10.20", "prefixlen": 24}]}
+    ],
+    "routes": [{"dst": "default", "gateway": "10.10.10.1", "dev": "eth0"}],
+    "probes": [{"host": "1.1.1.1", "reachable": true, "average_latency_ms": 18.4}]
+  },
+  "system": {"failed_services": []}
+}
+
