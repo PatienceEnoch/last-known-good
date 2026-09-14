@@ -13,7 +13,7 @@
 - [x] Detect resolver-response changes
 - [x] Correlate symptoms into one likely root cause instead of independent alerts
 - [x] Add snapshot redaction and retention controls
-- [ ] Add a reproducible Docker-based outage demonstration lab
+- [x] Add a reproducible Docker-based outage demonstration lab
 
 ## Phase 3 — AWS operations layer
 
