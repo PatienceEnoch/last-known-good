@@ -25,10 +25,10 @@ source .venv/bin/activate
 python -m pip install -e ".[dev]"
 
 # Capture a known-good baseline
-nfr snapshot --probe 1.1.1.1 --output snapshots/baseline.json
+nfr snapshot --probe 1.1.1.1 --dns example.com --output snapshots/baseline.json
 
 # Make an authorized change in a disposable lab, then capture current state
-nfr snapshot --probe 1.1.1.1 --output snapshots/current.json
+nfr snapshot --probe 1.1.1.1 --dns example.com --output snapshots/current.json
 
 # Reconstruct the incident
 nfr compare snapshots/baseline.json snapshots/current.json \
@@ -45,6 +45,7 @@ Example findings include:
 
 - Default route disappeared
 - DNS configuration became empty or changed
+- A DNS lookup failed or became unusually slow
 - A previously healthy interface went down
 - A reachability probe began failing
 - A new systemd service failure appeared
@@ -87,4 +88,3 @@ and approval-gated recovery with automatic verification and rollback.
 Ashley “Patience” Hopkins  
 WGU B.S. Cloud and Network Engineering — AWS Track  
 CompTIA A+ · CompTIA Network+ · LPI Linux Essentials · ITIL 4 Foundation
-

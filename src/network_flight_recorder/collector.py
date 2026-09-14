@@ -7,6 +7,7 @@ import platform
 import re
 import socket
 import subprocess
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -115,9 +116,32 @@ def _probe(host: str) -> dict[str, Any]:
     }
 
 
-def collect_snapshot(probe_hosts: list[str] | None = None) -> dict[str, Any]:
+def _dns_probe(name: str) -> dict[str, Any]:
+    """Resolve a name through the host's configured resolver and record timing."""
+    started = time.monotonic()
+    try:
+        results = socket.getaddrinfo(name, None, type=socket.SOCK_STREAM)
+        addresses = sorted({item[4][0] for item in results})
+        error = None
+    except socket.gaierror as exc:
+        addresses = []
+        error = str(exc)
+    elapsed_ms = round((time.monotonic() - started) * 1000, 2)
+    return {
+        "name": name,
+        "resolved": bool(addresses),
+        "response_time_ms": elapsed_ms,
+        "addresses": addresses,
+        "error": error,
+    }
+
+
+def collect_snapshot(
+    probe_hosts: list[str] | None = None, dns_names: list[str] | None = None
+) -> dict[str, Any]:
     """Return a JSON-serializable snapshot. Collection is local and read-only."""
     probe_hosts = probe_hosts or []
+    dns_names = dns_names or []
     return {
         "schema_version": 1,
         "captured_at": datetime.now(timezone.utc).isoformat(),
@@ -130,6 +154,7 @@ def collect_snapshot(probe_hosts: list[str] | None = None) -> dict[str, Any]:
             "interfaces": _interfaces(),
             "routes": _routes(),
             "probes": [_probe(host) for host in probe_hosts],
+            "dns_probes": [_dns_probe(name) for name in dns_names],
         },
         "system": {"failed_services": _failed_services()},
     }
