@@ -86,6 +86,38 @@ def analyze(baseline: dict[str, Any], current: dict[str, Any]) -> list[Finding]:
             )
         )
 
+    old_dns_probes = {
+        item.get("name"): item for item in baseline.get("network", {}).get("dns_probes", [])
+    }
+    for probe in current.get("network", {}).get("dns_probes", []):
+        old = old_dns_probes.get(probe.get("name"))
+        if old and old.get("resolved") and not probe.get("resolved"):
+            findings.append(
+                Finding(
+                    "critical",
+                    "dns",
+                    f"DNS lookup for {probe.get('name')} failed",
+                    f"The name resolved in the baseline but now fails: {probe.get('error') or 'unknown error'}.",
+                    "Test the configured resolver directly and compare IP reachability before changing DNS.",
+                )
+            )
+        elif old and old.get("resolved") and probe.get("resolved"):
+            old_time = old.get("response_time_ms")
+            new_time = probe.get("response_time_ms")
+            if (
+                old_time is not None
+                and new_time is not None
+                and new_time >= max(old_time * 3, old_time + 100)
+            ):
+                findings.append(
+                    Finding(
+                        "medium",
+                        "dns",
+                        f"DNS lookup for {probe.get('name')} slowed",
+                        f"Response time increased from {old_time:.2f} ms to {new_time:.2f} ms.",
+                        "Check resolver health, network latency, and retry against an approved alternate resolver.",
+                    )
+                )
     old_interfaces = _interfaces(baseline)
     new_interfaces = _interfaces(current)
     for name, old in old_interfaces.items():

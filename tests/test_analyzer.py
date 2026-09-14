@@ -56,3 +56,32 @@ def test_detects_address_mtu_latency_and_packet_loss_changes():
     assert "Interface eth0 addressing changed" in titles
     assert "Packet loss to 1.1.1.1 increased" in titles
     assert "Latency to 1.1.1.1 increased" in titles
+
+
+def test_detects_dns_failure_and_slow_response():
+    baseline = load("healthy.json")
+    baseline["network"]["dns_probes"] = [
+        {
+            "name": "example.com",
+            "resolved": True,
+            "response_time_ms": 20.0,
+            "addresses": ["192.0.2.10"],
+            "error": None,
+        },
+        {
+            "name": "example.net",
+            "resolved": True,
+            "response_time_ms": 25.0,
+            "addresses": ["192.0.2.20"],
+            "error": None,
+        },
+    ]
+    current = json.loads(json.dumps(baseline))
+    current["network"]["dns_probes"][0].update(
+        {"resolved": False, "response_time_ms": 15.0, "addresses": [], "error": "name not known"}
+    )
+    current["network"]["dns_probes"][1]["response_time_ms"] = 150.0
+
+    titles = {finding.title for finding in analyze(baseline, current)}
+    assert "DNS lookup for example.com failed" in titles
+    assert "DNS lookup for example.net slowed" in titles

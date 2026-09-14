@@ -30,6 +30,9 @@ def build_parser() -> argparse.ArgumentParser:
     snapshot.add_argument(
         "--probe", action="append", default=[], help="Optional host to ping; repeat as needed"
     )
+    snapshot.add_argument(
+        "--dns", action="append", default=[], help="Optional name to resolve; repeat as needed"
+    )
 
     compare = commands.add_parser("compare", help="Compare baseline and current snapshots")
     compare.add_argument("baseline", type=Path)
@@ -42,7 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "snapshot":
-        snapshot = collect_snapshot(args.probe)
+        snapshot = collect_snapshot(args.probe, args.dns)
         _write(args.output, json.dumps(snapshot, indent=2) + "\n")
         print(f"Snapshot written to {args.output}")
         return 0
@@ -64,4 +67,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
