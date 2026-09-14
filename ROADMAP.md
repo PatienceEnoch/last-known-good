@@ -11,7 +11,7 @@
 
 - [x] Detect address, MTU, latency, and packet-loss changes
 - [x] Detect resolver-response changes
-- [ ] Correlate symptoms into one likely root cause instead of independent alerts
+- [x] Correlate symptoms into one likely root cause instead of independent alerts
 - [ ] Add snapshot redaction and retention controls
 - [ ] Add a reproducible Docker-based outage demonstration lab
 

@@ -15,6 +15,15 @@ class Finding:
     recommendation: str
 
 
+@dataclass(frozen=True)
+class Diagnosis:
+    likely_cause: str
+    confidence: str
+    rationale: str
+    supporting_findings: tuple[str, ...]
+    verification: str
+
+
 def _default_route(snapshot: dict[str, Any]) -> dict[str, Any] | None:
     routes = snapshot.get("network", {}).get("routes", [])
     return next((route for route in routes if route.get("dst") == "default"), None)
@@ -233,6 +242,73 @@ def findings_as_dicts(findings: list[Finding]) -> list[dict[str, str]]:
     return [asdict(finding) for finding in findings]
 
 
+def diagnose(findings: list[Finding]) -> Diagnosis | None:
+    """Correlate related symptoms into one explainable likely root cause."""
+    titles = {finding.title for finding in findings}
+    categories = {finding.category for finding in findings}
+    interface_failures = sorted(
+        title
+        for title in titles
+        if title.startswith("Interface ")
+        and title.endswith(("disappeared", "is no longer up"))
+    )
+    route_failures = sorted(
+        title for title in titles if title in {"Default route disappeared", "Default route changed"}
+    )
+    connectivity_failures = sorted(
+        title for title in titles if title.startswith("Probe to ") and title.endswith(" failed")
+    )
+    dns_failures = sorted(
+        title
+        for title in titles
+        if title == "DNS configuration is empty"
+        or (title.startswith("DNS lookup for ") and title.endswith(" failed"))
+    )
+
+    if interface_failures and (route_failures or connectivity_failures):
+        return Diagnosis(
+            "Local interface or link failure",
+            "high",
+            "An interface failure occurred alongside loss of routing or external reachability.",
+            tuple(interface_failures + route_failures + connectivity_failures),
+            "Verify link state, cabling or Wi-Fi association, switch port status, and the interface driver.",
+        )
+    if route_failures and connectivity_failures:
+        return Diagnosis(
+            "Default gateway or routing failure",
+            "high",
+            "External reachability failed when the default route disappeared or changed.",
+            tuple(route_failures + connectivity_failures),
+            "Verify the default gateway, route table, and DHCP lease before testing upstream.",
+        )
+    if dns_failures and "connectivity" not in categories:
+        return Diagnosis(
+            "DNS resolution failure",
+            "high",
+            "Name resolution failed without evidence that direct IP reachability failed.",
+            tuple(dns_failures),
+            "Query the configured resolver directly, then verify resolver health and configuration.",
+        )
+    degradation = sorted(
+        title
+        for title in titles
+        if title.startswith(("Packet loss to ", "Latency to "))
+    )
+    if len(degradation) >= 2:
+        return Diagnosis(
+            "Network path degradation or congestion",
+            "medium",
+            "Latency and packet loss worsened together while the destination remained reachable.",
+            tuple(degradation),
+            "Compare gateway and upstream probes, then inspect interface errors and utilization.",
+        )
+    return None
+
+
+def diagnosis_as_dict(diagnosis: Diagnosis | None) -> dict[str, Any] | None:
+    return asdict(diagnosis) if diagnosis else None
+
+
 def findings_as_markdown(
     baseline: dict[str, Any], current: dict[str, Any], findings: list[Finding]
 ) -> str:
@@ -244,6 +320,26 @@ def findings_as_markdown(
         f"- Findings: {len(findings)}",
         "",
     ]
+    diagnosis = diagnose(findings)
+    if diagnosis:
+        lines.extend(
+            [
+                "## Likely root cause",
+                "",
+                f"**{diagnosis.likely_cause}** — {diagnosis.confidence.upper()} confidence",
+                "",
+                diagnosis.rationale,
+                "",
+                "**Correlated evidence:**",
+                "",
+                *[f"- {title}" for title in diagnosis.supporting_findings],
+                "",
+                f"**Recommended verification:** {diagnosis.verification}",
+                "",
+                "---",
+                "",
+            ]
+        )
     if not findings:
         lines.extend(["## Result", "", "No high-signal network changes were detected.", ""])
         return "\n".join(lines)

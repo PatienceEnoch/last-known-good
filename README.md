@@ -13,8 +13,8 @@ Traditional monitoring tells an operator that something is down. Network Flight 
 designed to answer the next question: **What changed immediately before the failure?**
 
 The MVP records routes, interfaces, DNS resolvers, failed services, and optional reachability
-probes. It compares a healthy baseline with a later snapshot and explains each high-signal
-change with evidence and a recommended verification step.
+probes. It compares a healthy baseline with a later snapshot, correlates related symptoms into
+one likely root cause, and explains each change with evidence and a verification step.
 
 ## Two-minute demonstration
 
@@ -49,6 +49,9 @@ Example findings include:
 - A previously healthy interface went down
 - A reachability probe began failing
 - A new systemd service failure appeared
+
+When several symptoms share a cause, the report leads with an explainable diagnosis such as
+`Local interface or link failure — HIGH confidence` and lists the supporting evidence.
 
 ## Skills demonstrated
 
