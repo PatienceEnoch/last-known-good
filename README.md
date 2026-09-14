@@ -55,6 +55,15 @@ No Linux lab available yet? Run the included fixture demonstration:
 nfr compare tests/fixtures/healthy.json tests/fixtures/broken.json
 ```
 
+Have Docker Desktop or Docker Engine? Run the reproducible outage lab:
+
+```bash
+./lab/run_demo.sh
+```
+
+It safely removes the default route only inside a disposable container, records the outage,
+generates `reports/incident.md`, and restores the lab. See [the lab guide](docs/docker-lab.md).
+
 Example findings include:
 
 - Default route disappeared
@@ -75,6 +84,7 @@ When several symptoms share a cause, the report leads with an explainable diagno
 - Incident-response documentation and evidence-based diagnosis
 - Secure-by-default design and human-approved remediation planning
 - GitHub Actions continuous integration
+- Docker-based failure injection with an isolated network namespace
 
 ## Architecture
 

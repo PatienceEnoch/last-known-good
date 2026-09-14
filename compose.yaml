@@ -1,0 +1,13 @@
+services:
+  recorder:
+    build: .
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./snapshots:/app/snapshots
+      - ./reports:/app/reports
