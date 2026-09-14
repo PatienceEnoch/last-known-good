@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .analyzer import analyze, findings_as_dicts, findings_as_markdown
+from .analyzer import analyze, diagnose, diagnosis_as_dict, findings_as_dicts, findings_as_markdown
 from .collector import collect_snapshot
 
 
@@ -54,7 +54,10 @@ def main(argv: list[str] | None = None) -> int:
     current = _load(args.current)
     findings = analyze(baseline, current)
     if args.format == "json":
-        report = json.dumps({"findings": findings_as_dicts(findings)}, indent=2) + "\n"
+        report = json.dumps(
+            {"diagnosis": diagnosis_as_dict(diagnose(findings)), "findings": findings_as_dicts(findings)},
+            indent=2,
+        ) + "\n"
     else:
         report = findings_as_markdown(baseline, current, findings)
     if args.output:
