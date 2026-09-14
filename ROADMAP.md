@@ -12,7 +12,7 @@
 - [x] Detect address, MTU, latency, and packet-loss changes
 - [x] Detect resolver-response changes
 - [x] Correlate symptoms into one likely root cause instead of independent alerts
-- [ ] Add snapshot redaction and retention controls
+- [x] Add snapshot redaction and retention controls
 - [ ] Add a reproducible Docker-based outage demonstration lab
 
 ## Phase 3 — AWS operations layer
