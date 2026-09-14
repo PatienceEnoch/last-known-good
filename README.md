@@ -35,6 +35,20 @@ nfr compare snapshots/baseline.json snapshots/current.json \
   --output reports/incident.md
 ```
 
+To pseudonymize hostnames, IP addresses, and probe targets while keeping comparisons stable:
+
+```bash
+export NFR_REDACTION_KEY="use-a-long-private-value"
+nfr snapshot --redact --probe 1.1.1.1 --dns example.com --output snapshots/shared.json
+```
+
+Retention cleanup is a dry run unless `--apply` is supplied:
+
+```bash
+nfr prune --directory snapshots --keep 100 --max-age-days 30
+nfr prune --directory snapshots --keep 100 --max-age-days 30 --apply
+```
+
 No Linux lab available yet? Run the included fixture demonstration:
 
 ```bash
