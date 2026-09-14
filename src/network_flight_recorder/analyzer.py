@@ -25,6 +25,13 @@ def _interfaces(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {item.get("name", "unknown"): item for item in items}
 
 
+def _address_set(interface: dict[str, Any]) -> set[tuple[Any, Any, Any]]:
+    return {
+        (address.get("family"), address.get("local"), address.get("prefixlen"))
+        for address in interface.get("addresses", [])
+    }
+
+
 def analyze(baseline: dict[str, Any], current: dict[str, Any]) -> list[Finding]:
     """Identify high-signal changes between a known-good and current snapshot."""
     findings: list[Finding] = []
@@ -103,6 +110,31 @@ def analyze(baseline: dict[str, Any], current: dict[str, Any]) -> list[Finding]:
                     "Check link state, switch port status, cabling, and the interface configuration.",
                 )
             )
+        else:
+            if old.get("mtu") and new.get("mtu") and old.get("mtu") != new.get("mtu"):
+                findings.append(
+                    Finding(
+                        "medium",
+                        "interface",
+                        f"Interface {name} MTU changed",
+                        f"MTU changed from {old.get('mtu')} to {new.get('mtu')}.",
+                        "Confirm the MTU matches the connected network and test for fragmentation.",
+                    )
+                )
+            old_addresses = _address_set(old)
+            new_addresses = _address_set(new)
+            if old_addresses != new_addresses:
+                removed = sorted(old_addresses - new_addresses, key=str)
+                added = sorted(new_addresses - old_addresses, key=str)
+                findings.append(
+                    Finding(
+                        "high",
+                        "addressing",
+                        f"Interface {name} addressing changed",
+                        f"Removed addresses: {removed or 'none'}; added addresses: {added or 'none'}.",
+                        "Verify DHCP or static addressing, prefix length, and duplicate-address events.",
+                    )
+                )
 
     old_probes = {
         item.get("host"): item for item in baseline.get("network", {}).get("probes", [])
@@ -119,6 +151,35 @@ def analyze(baseline: dict[str, Any], current: dict[str, Any]) -> list[Finding]:
                     "Test the local gateway, routing, DNS, and upstream connectivity in that order.",
                 )
             )
+        elif old and old.get("reachable") and probe.get("reachable"):
+            old_loss = old.get("packet_loss_percent")
+            new_loss = probe.get("packet_loss_percent")
+            if old_loss is not None and new_loss is not None and new_loss - old_loss >= 20:
+                findings.append(
+                    Finding(
+                        "high",
+                        "connectivity",
+                        f"Packet loss to {probe.get('host')} increased",
+                        f"Packet loss increased from {old_loss:.1f}% to {new_loss:.1f}%.",
+                        "Check interface errors, Wi-Fi signal, cabling, congestion, and upstream loss.",
+                    )
+                )
+            old_latency = old.get("average_latency_ms")
+            new_latency = probe.get("average_latency_ms")
+            if (
+                old_latency is not None
+                and new_latency is not None
+                and new_latency >= max(old_latency * 2, old_latency + 25)
+            ):
+                findings.append(
+                    Finding(
+                        "medium",
+                        "performance",
+                        f"Latency to {probe.get('host')} increased",
+                        f"Average latency increased from {old_latency:.1f} ms to {new_latency:.1f} ms.",
+                        "Compare gateway and upstream latency, then check congestion and route changes.",
+                    )
+                )
 
     old_failed = set(baseline.get("system", {}).get("failed_services", []))
     new_failed = set(current.get("system", {}).get("failed_services", []))
@@ -169,4 +230,3 @@ def findings_as_markdown(
             ]
         )
     return "\n".join(lines)
-

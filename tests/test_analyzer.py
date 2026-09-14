@@ -33,3 +33,26 @@ def test_markdown_report_contains_evidence_and_recommendation():
     assert "**Evidence:**" in report
     assert "**Recommended verification:**" in report
 
+
+def test_detects_address_mtu_latency_and_packet_loss_changes():
+    baseline = load("healthy.json")
+    current = json.loads(json.dumps(baseline))
+    baseline_interface = baseline["network"]["interfaces"][0]
+    current_interface = current["network"]["interfaces"][0]
+    baseline_interface["mtu"] = 1500
+    current_interface["mtu"] = 1400
+    current_interface["addresses"] = [
+        {"family": "inet", "local": "192.0.2.25", "prefixlen": 24}
+    ]
+    baseline_probe = baseline["network"]["probes"][0]
+    current_probe = current["network"]["probes"][0]
+    baseline_probe["packet_loss_percent"] = 0.0
+    current_probe["packet_loss_percent"] = 33.0
+    baseline_probe["average_latency_ms"] = 10.0
+    current_probe["average_latency_ms"] = 50.0
+
+    titles = {finding.title for finding in analyze(baseline, current)}
+    assert "Interface eth0 MTU changed" in titles
+    assert "Interface eth0 addressing changed" in titles
+    assert "Packet loss to 1.1.1.1 increased" in titles
+    assert "Latency to 1.1.1.1 increased" in titles
