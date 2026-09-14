@@ -70,6 +70,7 @@ def _interfaces() -> list[dict[str, Any]]:
             {
                 "name": item.get("ifname"),
                 "state": item.get("operstate", "UNKNOWN"),
+                "mtu": item.get("mtu"),
                 "addresses": addresses,
             }
         )
@@ -99,13 +100,18 @@ def _failed_services() -> list[str]:
 def _probe(host: str) -> dict[str, Any]:
     result = _run(["ping", "-c", "3", "-W", "2", host], timeout=8)
     latency = None
+    packet_loss_percent = None
     match = re.search(r"= [\d.]+/([\d.]+)/", result["stdout"])
     if match:
         latency = float(match.group(1))
+    loss_match = re.search(r"([\d.]+)% packet loss", result["stdout"])
+    if loss_match:
+        packet_loss_percent = float(loss_match.group(1))
     return {
         "host": host,
         "reachable": result["return_code"] == 0,
         "average_latency_ms": latency,
+        "packet_loss_percent": packet_loss_percent,
     }
 
 
@@ -127,4 +133,3 @@ def collect_snapshot(probe_hosts: list[str] | None = None) -> dict[str, Any]:
         },
         "system": {"failed_services": _failed_services()},
     }
-

@@ -9,7 +9,8 @@
 
 ## Phase 2 — Better diagnosis
 
-- [ ] Detect address, MTU, latency, packet-loss, and resolver-response changes
+- [x] Detect address, MTU, latency, and packet-loss changes
+- [ ] Detect resolver-response changes
 - [ ] Correlate symptoms into one likely root cause instead of independent alerts
 - [ ] Add snapshot redaction and retention controls
 - [ ] Add a reproducible Docker-based outage demonstration lab
@@ -28,4 +29,3 @@
 - [ ] Restrict actions to an explicit allowlist
 - [ ] Verify recovery and automatically produce a before/after report
 - [ ] Demonstrate rollback when verification fails
-
