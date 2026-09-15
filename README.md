@@ -3,9 +3,9 @@
 An explainable, local-first network diagnostic tool that records a known-good Linux network
 state, detects what changed during an outage, and produces an evidence-based incident report.
 
-> **Project status:** working MVP. Snapshot collection targets Linux. AWS infrastructure,
-> dashboarding, failure injection, and guarded remediation are planned and clearly separated
-> from implemented features.
+> **Project status:** Phase 2 validated. The Linux collector, explainable diagnosis engine,
+> privacy controls, and isolated Docker failure-injection lab are implemented. AWS
+> infrastructure, dashboarding, and guarded remediation remain planned work.
 
 ## Why this exists
 
@@ -63,6 +63,23 @@ Have Docker Desktop or Docker Engine? Run the reproducible outage lab:
 
 It safely removes the default route only inside a disposable container, records the outage,
 generates `reports/incident.md`, and restores the lab. See [the lab guide](docs/docker-lab.md).
+
+## Validated outage demonstration
+
+On September 14, 2026, the complete lab was run on Ubuntu 24.04.4 LTS inside Oracle VirtualBox
+with Docker Engine 29.1.3 and Docker Compose 2.40.3. All 11 automated tests passed before the
+demonstration.
+
+The lab removed the container's default route. Network Flight Recorder captured the resulting
+loss of external reachability, produced two evidence-backed findings, and diagnosed **Default
+gateway or routing failure** with **HIGH confidence**. The cleanup routine then restarted the
+container and restored its Docker-managed network.
+
+![Network Flight Recorder capturing and diagnosing the container outage](docs/assets/docker-demo-report-1.jpeg)
+
+![Completed incident report and returned terminal prompt](docs/assets/docker-demo-report-2.jpeg)
+
+See [the full validation record](docs/validated-demo.md).
 
 Example findings include:
 
