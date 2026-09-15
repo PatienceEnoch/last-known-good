@@ -11,3 +11,13 @@ reports/*.md
 !snapshots/.gitkeep
 !reports/.gitkeep
 
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
