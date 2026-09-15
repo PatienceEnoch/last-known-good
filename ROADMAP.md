@@ -17,8 +17,11 @@
 
 ## Phase 3 — AWS operations layer
 
-- [ ] Provision AWS infrastructure with Terraform
-- [ ] Encrypt evidence at rest and in transit
+- [x] Establish Terraform-managed AWS infrastructure
+- [x] Create private, versioned S3 evidence storage with SSE-S3 encryption
+- [x] Block all public access to the evidence bucket
+- [ ] Upload redacted Network Flight Recorder evidence to S3
+- [ ] Enforce encryption in transit
 - [ ] Publish redacted health metrics to CloudWatch
 - [ ] Store incident summaries and expose a minimal dashboard
 - [ ] Add GitHub Actions security and infrastructure checks

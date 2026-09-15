@@ -3,9 +3,11 @@
 An explainable, local-first network diagnostic tool that records a known-good Linux network
 state, detects what changed during an outage, and produces an evidence-based incident report.
 
-> **Project status:** Phase 2 validated. The Linux collector, explainable diagnosis engine,
-> privacy controls, and isolated Docker failure-injection lab are implemented. AWS
-> infrastructure, dashboarding, and guarded remediation remain planned work.
+> **Project status:** Phase 3 in progress. The Linux collector, explainable diagnosis engine,
+> privacy controls, and isolated Docker failure-injection lab are validated. Terraform-managed
+> AWS infrastructure is now deployed with private, versioned, SSE-S3-encrypted evidence storage.
+> CloudWatch monitoring, automated evidence upload, dashboarding, and guarded remediation remain
+> planned work.
 
 ## Why this exists
 
@@ -102,6 +104,7 @@ When several symptoms share a cause, the report leads with an explainable diagno
 - Secure-by-default design and human-approved remediation planning
 - GitHub Actions continuous integration
 - Docker-based failure injection with an isolated network namespace
+- Terraform infrastructure as code, AWS IAM, S3 security, encryption, versioning, and public-access controls
 
 ## Architecture
 
