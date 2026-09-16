@@ -36,3 +36,33 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "incident_evidence
 output "incident_evidence_bucket" {
   value = aws_s3_bucket.incident_evidence.bucket
 }
+
+data "aws_iam_policy_document" "require_tls" {
+  statement {
+    sid    = "DenyInsecureTransport"
+    effect = "Deny"
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions = ["s3:*"]
+
+    resources = [
+      aws_s3_bucket.incident_evidence.arn,
+      "${aws_s3_bucket.incident_evidence.arn}/*"
+    ]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "require_tls" {
+  bucket = aws_s3_bucket.incident_evidence.id
+  policy = data.aws_iam_policy_document.require_tls.json
+}
