@@ -7,7 +7,6 @@ import subprocess
 import time
 from typing import Any
 
-
 LOG_GROUP = "/network-flight-recorder/incidents"
 LOG_STREAM = "incident-summaries"
 

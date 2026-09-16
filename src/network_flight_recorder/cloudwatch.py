@@ -6,7 +6,6 @@ import json
 import subprocess
 from typing import Any
 
-
 NAMESPACE = "NetworkFlightRecorder"
 
 
