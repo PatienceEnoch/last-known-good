@@ -46,7 +46,37 @@ resource "aws_cloudwatch_dashboard" "nfr" {
             ]
           ]
         }
+      },
+      {
+        type   = "log"
+        x      = 0
+        y      = 6
+        width  = 24
+        height = 6
+
+        properties = {
+          title  = "Recent Incidents"
+          region = "us-east-1"
+          view   = "table"
+
+          query = <<-EOT
+            SOURCE '${aws_cloudwatch_log_group.incident_summaries.name}'
+            | fields @timestamp, likely_cause, confidence, finding_count, severity_counts, categories
+            | sort @timestamp desc
+            | limit 20
+          EOT
+        }
       }
     ]
   })
+}
+
+resource "aws_cloudwatch_log_group" "incident_summaries" {
+  name              = "/network-flight-recorder/incidents"
+  retention_in_days = 30
+}
+
+resource "aws_cloudwatch_log_stream" "incident_summaries" {
+  name           = "incident-summaries"
+  log_group_name = aws_cloudwatch_log_group.incident_summaries.name
 }

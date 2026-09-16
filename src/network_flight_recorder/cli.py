@@ -16,6 +16,7 @@ from .analyzer import (
 )
 from .cloudwatch import publish_snapshot_metrics
 from .collector import collect_snapshot
+from .incidents import build_incident_summary, publish_incident_summary
 from .privacy import redact_snapshot
 from .retention import apply_prune, prune_candidates
 
@@ -98,6 +99,12 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument(
         "--output",
         type=Path,
+    )
+
+    compare.add_argument(
+        "--cloudwatch",
+        action="store_true",
+        help="Publish a privacy-preserving incident summary to CloudWatch Logs",
     )
 
     prune = commands.add_parser(
@@ -199,13 +206,26 @@ def main(argv: list[str] | None = None) -> int:
         current,
     )
 
+    diagnosis = diagnose(findings)
+
+    if args.cloudwatch:
+        findings_dicts = findings_as_dicts(findings)
+
+        summary = build_incident_summary(
+            current.get("captured_at"),
+            findings_dicts,
+            diagnosis_as_dict(diagnosis),
+        )
+
+        publish_incident_summary(summary)
+
+        print("CloudWatch incident summary published")
+
     if args.format == "json":
         report = (
             json.dumps(
                 {
-                    "diagnosis": diagnosis_as_dict(
-                        diagnose(findings)
-                    ),
+                    "diagnosis": diagnosis_as_dict(diagnosis),
                     "findings": findings_as_dicts(
                         findings
                     ),
