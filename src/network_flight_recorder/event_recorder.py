@@ -30,3 +30,16 @@ class EventRecorder:
     def get_events(self) -> list[NetworkEvent]:
         """Return all recorded events in chronological order."""
         return sorted(self._events, key=lambda event: event.timestamp)
+
+
+    def get_events_between(
+        self,
+        start: datetime,
+        end: datetime,
+    ) -> list[NetworkEvent]:
+        """Return events that occurred between two timestamps."""
+        return [
+            event
+            for event in self.get_events()
+            if start <= event.timestamp <= end
+        ]

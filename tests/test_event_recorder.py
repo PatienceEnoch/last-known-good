@@ -38,3 +38,40 @@ def test_events_are_returned_in_chronological_order() -> None:
     recorder.record(earlier)
 
     assert recorder.get_events() == [earlier, later]
+
+def test_get_events_between_returns_only_matching_events() -> None:
+    recorder = EventRecorder()
+
+    base_time = datetime.now(UTC)
+
+    before = NetworkEvent(
+        event_type="before_window",
+        source="router-01",
+        message="Before incident window",
+        timestamp=base_time - timedelta(minutes=10),
+    )
+
+    inside = NetworkEvent(
+        event_type="packet_loss",
+        source="router-01",
+        message="Packet loss detected",
+        timestamp=base_time,
+    )
+
+    after = NetworkEvent(
+        event_type="after_window",
+        source="router-01",
+        message="After incident window",
+        timestamp=base_time + timedelta(minutes=10),
+    )
+
+    recorder.record(before)
+    recorder.record(inside)
+    recorder.record(after)
+
+    events = recorder.get_events_between(
+        base_time - timedelta(minutes=5),
+        base_time + timedelta(minutes=5),
+    )
+
+    assert events == [inside]
