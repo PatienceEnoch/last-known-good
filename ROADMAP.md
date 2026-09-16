@@ -28,7 +28,7 @@
 
 ## Phase 4 — Guarded recovery
 
-- [ ] Generate an approval-required remediation plan
+- [x] Generate an approval-required remediation plan
 - [ ] Restrict actions to an explicit allowlist
 - [ ] Verify recovery and automatically produce a before/after report
 - [ ] Demonstrate rollback when verification fails
