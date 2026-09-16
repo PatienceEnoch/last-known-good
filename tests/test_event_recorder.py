@@ -75,3 +75,36 @@ def test_get_events_between_returns_only_matching_events() -> None:
     )
 
     assert events == [inside]
+
+
+def test_filter_events_by_source_and_type() -> None:
+    recorder = EventRecorder()
+
+    router_failure = NetworkEvent(
+        event_type="connectivity_failure",
+        source="router-01",
+        message="Router lost connectivity",
+    )
+
+    router_recovery = NetworkEvent(
+        event_type="recovery",
+        source="router-01",
+        message="Router connectivity restored",
+    )
+
+    server_failure = NetworkEvent(
+        event_type="connectivity_failure",
+        source="web-server-01",
+        message="Server health check failed",
+    )
+
+    recorder.record(router_failure)
+    recorder.record(router_recovery)
+    recorder.record(server_failure)
+
+    events = recorder.filter_events(
+        source="router-01",
+        event_type="connectivity_failure",
+    )
+
+    assert events == [router_failure]

@@ -43,3 +43,23 @@ class EventRecorder:
             for event in self.get_events()
             if start <= event.timestamp <= end
         ]
+
+
+    def filter_events(
+        self,
+        *,
+        source: str | None = None,
+        event_type: str | None = None,
+    ) -> list[NetworkEvent]:
+        """Return events matching the requested source and event type."""
+        events = self.get_events()
+
+        if source is not None:
+            events = [event for event in events if event.source == source]
+
+        if event_type is not None:
+            events = [
+                event for event in events if event.event_type == event_type
+            ]
+
+        return events
