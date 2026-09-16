@@ -24,7 +24,7 @@
 - [x] Enforce encryption in transit
 - [x] Publish redacted health metrics to CloudWatch
 - [x] Store incident summaries and expose a minimal dashboard
-- [ ] Add GitHub Actions security and infrastructure checks
+- [x] Add GitHub Actions security and infrastructure checks
 
 ## Phase 4 — Guarded recovery
 
