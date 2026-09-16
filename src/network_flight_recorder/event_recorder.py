@@ -63,3 +63,30 @@ class EventRecorder:
             ]
 
         return events
+
+    def query_events(
+        self,
+        *,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        source: str | None = None,
+        event_type: str | None = None,
+    ) -> list[NetworkEvent]:
+        """Return events matching the requested incident criteria."""
+        events = self.get_events()
+
+        if start is not None:
+            events = [event for event in events if event.timestamp >= start]
+
+        if end is not None:
+            events = [event for event in events if event.timestamp <= end]
+
+        if source is not None:
+            events = [event for event in events if event.source == source]
+
+        if event_type is not None:
+            events = [
+                event for event in events if event.event_type == event_type
+            ]
+
+        return events

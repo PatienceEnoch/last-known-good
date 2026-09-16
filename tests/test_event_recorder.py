@@ -108,3 +108,50 @@ def test_filter_events_by_source_and_type() -> None:
     )
 
     assert events == [router_failure]
+
+def test_query_events_combines_filters() -> None:
+    recorder = EventRecorder()
+
+    base_time = datetime.now(UTC)
+
+    matching = NetworkEvent(
+        event_type="connectivity_failure",
+        source="router-01",
+        message="Router lost connectivity",
+        timestamp=base_time,
+    )
+
+    wrong_source = NetworkEvent(
+        event_type="connectivity_failure",
+        source="router-02",
+        message="Another router failed",
+        timestamp=base_time,
+    )
+
+    wrong_type = NetworkEvent(
+        event_type="recovery",
+        source="router-01",
+        message="Router recovered",
+        timestamp=base_time,
+    )
+
+    outside_window = NetworkEvent(
+        event_type="connectivity_failure",
+        source="router-01",
+        message="Older failure",
+        timestamp=base_time - timedelta(minutes=20),
+    )
+
+    recorder.record(matching)
+    recorder.record(wrong_source)
+    recorder.record(wrong_type)
+    recorder.record(outside_window)
+
+    events = recorder.query_events(
+        start=base_time - timedelta(minutes=5),
+        end=base_time + timedelta(minutes=5),
+        source="router-01",
+        event_type="connectivity_failure",
+    )
+
+    assert events == [matching]
