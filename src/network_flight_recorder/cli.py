@@ -18,6 +18,11 @@ from .cloudwatch import publish_snapshot_metrics
 from .collector import collect_snapshot
 from .incidents import build_incident_summary, publish_incident_summary
 from .privacy import redact_snapshot
+from .remediation import (
+    generate_remediation_plan,
+    remediation_plan_as_dict,
+    remediation_plan_as_markdown,
+)
 from .retention import apply_prune, prune_candidates
 
 
@@ -105,6 +110,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--cloudwatch",
         action="store_true",
         help="Publish a privacy-preserving incident summary to CloudWatch Logs",
+    )
+
+    compare.add_argument(
+        "--remediation-plan",
+        action="store_true",
+        help="Generate an approval-required remediation plan",
     )
 
     prune = commands.add_parser(
@@ -208,6 +219,13 @@ def main(argv: list[str] | None = None) -> int:
 
     diagnosis = diagnose(findings)
 
+    remediation_plan = None
+
+    if args.remediation_plan:
+        remediation_plan = generate_remediation_plan(
+            diagnosis
+        )
+
     if args.cloudwatch:
         findings_dicts = findings_as_dicts(findings)
 
@@ -222,14 +240,19 @@ def main(argv: list[str] | None = None) -> int:
         print("CloudWatch incident summary published")
 
     if args.format == "json":
+        payload = {
+            "diagnosis": diagnosis_as_dict(diagnosis),
+            "findings": findings_as_dicts(findings),
+        }
+
+        if args.remediation_plan:
+            payload["remediation_plan"] = remediation_plan_as_dict(
+                remediation_plan
+            )
+
         report = (
             json.dumps(
-                {
-                    "diagnosis": diagnosis_as_dict(diagnosis),
-                    "findings": findings_as_dicts(
-                        findings
-                    ),
-                },
+                payload,
                 indent=2,
             )
             + "\n"
@@ -241,6 +264,11 @@ def main(argv: list[str] | None = None) -> int:
             current,
             findings,
         )
+
+        if args.remediation_plan:
+            report += "\n" + remediation_plan_as_markdown(
+                remediation_plan
+            )
 
     if args.output:
         _write(
