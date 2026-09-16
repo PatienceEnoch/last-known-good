@@ -23,7 +23,7 @@
 - [x] Upload redacted Network Flight Recorder evidence to S3
 - [x] Enforce encryption in transit
 - [x] Publish redacted health metrics to CloudWatch
-- [ ] Store incident summaries and expose a minimal dashboard
+- [x] Store incident summaries and expose a minimal dashboard
 - [ ] Add GitHub Actions security and infrastructure checks
 
 ## Phase 4 — Guarded recovery
