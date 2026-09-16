@@ -22,7 +22,7 @@
 - [x] Block all public access to the evidence bucket
 - [x] Upload redacted Network Flight Recorder evidence to S3
 - [x] Enforce encryption in transit
-- [ ] Publish redacted health metrics to CloudWatch
+- [x] Publish redacted health metrics to CloudWatch
 - [ ] Store incident summaries and expose a minimal dashboard
 - [ ] Add GitHub Actions security and infrastructure checks
 
