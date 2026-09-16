@@ -24,6 +24,28 @@ resource "aws_cloudwatch_dashboard" "nfr" {
             ]
           ]
         }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 0
+        width  = 12
+        height = 6
+
+        properties = {
+          title  = "Reachability Failures"
+          region = "us-east-1"
+          view   = "timeSeries"
+          stat   = "Sum"
+          period = 300
+
+          metrics = [
+            [
+              "NetworkFlightRecorder",
+              "ReachabilityFailure"
+            ]
+          ]
+        }
       }
     ]
   })
