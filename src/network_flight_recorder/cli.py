@@ -31,6 +31,7 @@ from .incidents import (
     incidents_as_markdown,
     publish_incident_summary,
 )
+from .monitor import watch_network
 from .privacy import redact_snapshot
 from .remediation import (
     generate_remediation_plan,
@@ -325,6 +326,45 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional file to write the incident report to",
     )
 
+    watch = commands.add_parser(
+        "watch",
+        help="Continuously monitor network state changes",
+    )
+
+    watch.add_argument(
+        "--interval",
+        type=float,
+        default=30.0,
+        help="Seconds between network snapshots",
+    )
+
+    watch.add_argument(
+        "--cycles",
+        type=int,
+        help="Optional number of monitoring cycles",
+    )
+
+    watch.add_argument(
+        "--probe",
+        action="append",
+        default=[],
+        help="Optional host to ping; repeat as needed",
+    )
+
+    watch.add_argument(
+        "--dns",
+        action="append",
+        default=[],
+        help="Optional name to resolve; repeat as needed",
+    )
+
+    watch.add_argument(
+        "--log",
+        type=Path,
+        default=Path("events/events.jsonl"),
+        help="Path to the JSONL event log",
+    )
+
     prune = commands.add_parser(
         "prune",
         help="Plan or apply snapshot retention",
@@ -453,6 +493,18 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(report)
 
+        return 0
+
+    if args.command == "watch":
+        completed = watch_network(
+            interval_seconds=args.interval,
+            event_log=args.log,
+            probe_hosts=args.probe,
+            dns_names=args.dns,
+            cycles=args.cycles,
+        )
+
+        print(f"Watch completed: {completed} cycle(s)")
         return 0
 
     if args.command == "prune":
