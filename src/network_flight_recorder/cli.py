@@ -137,6 +137,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     timeline.add_argument(
+        "--type",
+        dest="event_type",
+        help="Show only events of this type",
+    )
+
+    timeline.add_argument(
+        "--source",
+        help="Show only events from this source",
+    )
+
+    timeline.add_argument(
         "--output",
         type=Path,
         help="Optional file to write the timeline to",
@@ -210,6 +221,21 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "timeline":
         events = load_events(args.log)
+
+        if args.event_type:
+            events = [
+                event
+                for event in events
+                if event.event_type == args.event_type
+            ]
+
+        if args.source:
+            events = [
+                event
+                for event in events
+                if event.source == args.source
+            ]
+
         report = events_as_timeline(events)
 
         if args.output:
