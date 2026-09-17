@@ -46,6 +46,7 @@ def test_events_are_returned_in_chronological_order() -> None:
 
     assert recorder.get_events() == [earlier, later]
 
+
 def test_get_events_between_returns_only_matching_events() -> None:
     recorder = EventRecorder()
 
@@ -116,6 +117,7 @@ def test_filter_events_by_source_and_type() -> None:
 
     assert events == [router_failure]
 
+
 def test_query_events_combines_filters() -> None:
     recorder = EventRecorder()
 
@@ -162,6 +164,7 @@ def test_query_events_combines_filters() -> None:
     )
 
     assert events == [matching]
+
 
 def test_findings_to_events_uses_snapshot_timestamp() -> None:
     finding = Finding(
@@ -214,6 +217,32 @@ def test_save_and_load_events(tmp_path) -> None:
 
     path = tmp_path / "events.jsonl"
 
+    save_event(path, event)
+
+    events = load_events(path)
+
+    assert events == [event]
+
+
+def test_save_event_does_not_duplicate_exact_event(tmp_path) -> None:
+    event = NetworkEvent(
+        event_type="routing",
+        source="analyzer",
+        message="Default route disappeared",
+        timestamp=datetime(
+            2026,
+            9,
+            13,
+            12,
+            5,
+            tzinfo=UTC,
+        ),
+        metadata={"severity": "critical"},
+    )
+
+    path = tmp_path / "events.jsonl"
+
+    save_event(path, event)
     save_event(path, event)
 
     events = load_events(path)

@@ -21,6 +21,7 @@ class NetworkEvent:
     timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     metadata: dict[str, Any] = field(default_factory=dict)
 
+
 class EventRecorder:
     """Stores network events in the order they were recorded."""
 
@@ -35,7 +36,6 @@ class EventRecorder:
         """Return all recorded events in chronological order."""
         return sorted(self._events, key=lambda event: event.timestamp)
 
-
     def get_events_between(
         self,
         start: datetime,
@@ -47,7 +47,6 @@ class EventRecorder:
             for event in self.get_events()
             if start <= event.timestamp <= end
         ]
-
 
     def filter_events(
         self,
@@ -113,6 +112,7 @@ def events_as_timeline(events: list[NetworkEvent]) -> str:
 
     return "\n".join(lines)
 
+
 def findings_to_events(
     findings: list[Finding],
     captured_at: str,
@@ -135,9 +135,13 @@ def findings_to_events(
         for finding in findings
     ]
 
+
 def save_event(path: Path, event: NetworkEvent) -> None:
-    """Append a network event to a JSON Lines event log."""
+    """Append a network event unless the exact event is already stored."""
     path.parent.mkdir(parents=True, exist_ok=True)
+
+    if event in load_events(path):
+        return
 
     payload = {
         "event_type": event.event_type,
