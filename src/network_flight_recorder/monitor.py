@@ -167,6 +167,22 @@ def watch_network(
                     encoding="utf-8",
                 )
 
+                status_path = open_incident_dir / "status.json"
+                status = json.loads(
+                    status_path.read_text(encoding="utf-8")
+                )
+                status["status"] = "closed"
+                status["recovered_at"] = current["captured_at"]
+
+                status_path.write_text(
+                    json.dumps(
+                        status,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                    encoding="utf-8",
+                )
+
                 open_incident_dir = None
 
             else:
@@ -209,6 +225,19 @@ def watch_network(
                 )
 
                 if not is_recovery:
+                    (incident_dir / "status.json").write_text(
+                        json.dumps(
+                            {
+                                "status": "open",
+                                "started_at": current["captured_at"],
+                                "recovered_at": None,
+                            },
+                            indent=2,
+                            sort_keys=True,
+                        ),
+                        encoding="utf-8",
+                    )
+
                     open_incident_dir = incident_dir
 
         if reporter is not None:
