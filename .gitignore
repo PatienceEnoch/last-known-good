@@ -21,3 +21,5 @@ reports/*.md
 *.tfvars.json
 crash.log
 crash.*.log
+
+events/
