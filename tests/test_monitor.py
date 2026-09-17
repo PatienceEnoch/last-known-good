@@ -396,3 +396,69 @@ def test_watch_network_records_incident_status(tmp_path) -> None:
         "started_at": broken["captured_at"],
         "recovered_at": recovered["captured_at"],
     }
+
+
+def test_watch_network_recovers_open_incident_after_restart(tmp_path) -> None:
+    healthy = json.loads(
+        (FIXTURES / "healthy.json").read_text(encoding="utf-8")
+    )
+    broken = json.loads(
+        (FIXTURES / "broken.json").read_text(encoding="utf-8")
+    )
+    recovered = json.loads(json.dumps(healthy))
+    recovered["captured_at"] = "2026-09-13T12:10:00+00:00"
+
+    snapshot_dir = tmp_path / "snapshots"
+    event_log = tmp_path / "events.jsonl"
+
+    first_run = iter([healthy, broken])
+
+    def first_collector(probe_hosts, dns_names):
+        return next(first_run)
+
+    watch_network(
+        interval_seconds=1,
+        event_log=event_log,
+        snapshot_dir=snapshot_dir,
+        cycles=1,
+        collector=first_collector,
+        sleeper=lambda seconds: None,
+    )
+
+    incident_dir = (
+        snapshot_dir
+        / "incidents"
+        / "cycle-0001"
+    )
+
+    status = json.loads(
+        (incident_dir / "status.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert status["status"] == "open"
+
+    second_run = iter([broken, recovered])
+
+    def second_collector(probe_hosts, dns_names):
+        return next(second_run)
+
+    watch_network(
+        interval_seconds=1,
+        event_log=event_log,
+        snapshot_dir=snapshot_dir,
+        cycles=1,
+        collector=second_collector,
+        sleeper=lambda seconds: None,
+    )
+
+    status = json.loads(
+        (incident_dir / "status.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert status["status"] == "closed"
+    assert status["recovered_at"] == recovered["captured_at"]
+    assert (incident_dir / "recovery.json").exists()

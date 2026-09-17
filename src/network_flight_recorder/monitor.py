@@ -59,6 +59,44 @@ def _enforce_snapshot_limit(
 
 
 
+def _find_open_incident_dir(
+    snapshot_dir: Path | None,
+) -> Path | None:
+    """Return the newest persisted incident that is still open."""
+    if snapshot_dir is None:
+        return None
+
+    incidents_dir = snapshot_dir / "incidents"
+
+    if not incidents_dir.exists():
+        return None
+
+    incident_dirs = sorted(
+        (
+            path
+            for path in incidents_dir.iterdir()
+            if path.is_dir()
+        ),
+        reverse=True,
+    )
+
+    for incident_dir in incident_dirs:
+        status_path = incident_dir / "status.json"
+
+        if not status_path.exists():
+            continue
+
+        status = json.loads(
+            status_path.read_text(encoding="utf-8")
+        )
+
+        if status.get("status") == "open":
+            return incident_dir
+
+    return None
+
+
+
 def watch_network(
     *,
     interval_seconds: float,
@@ -103,7 +141,9 @@ def watch_network(
         )
 
     completed = 0
-    open_incident_dir: Path | None = None
+    open_incident_dir = _find_open_incident_dir(
+        snapshot_dir,
+    )
 
     while cycles is None or completed < cycles:
         sleeper(interval_seconds)
