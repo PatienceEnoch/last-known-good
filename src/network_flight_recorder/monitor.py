@@ -137,6 +137,36 @@ def watch_network(
 
         completed += 1
 
+        if findings and snapshot_dir is not None:
+            incident_dir = (
+                snapshot_dir
+                / "incidents"
+                / f"cycle-{completed:04d}"
+            )
+
+            incident_dir.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
+            (incident_dir / "before.json").write_text(
+                json.dumps(
+                    previous,
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
+            (incident_dir / "after.json").write_text(
+                json.dumps(
+                    current,
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
         if reporter is not None:
             reporter(
                 completed,

@@ -188,3 +188,48 @@ def test_watch_network_limits_snapshot_history(tmp_path) -> None:
         "0002.json",
         "0003.json",
     ]
+
+
+def test_watch_network_preserves_incident_evidence(tmp_path) -> None:
+    baseline = json.loads(
+        (FIXTURES / "healthy.json").read_text(encoding="utf-8")
+    )
+    current = json.loads(
+        (FIXTURES / "broken.json").read_text(encoding="utf-8")
+    )
+
+    snapshots = iter([baseline, current])
+
+    def fake_collector(probe_hosts, dns_names):
+        return next(snapshots)
+
+    def fake_sleep(seconds):
+        pass
+
+    snapshot_dir = tmp_path / "snapshots"
+
+    watch_network(
+        interval_seconds=1,
+        event_log=tmp_path / "events.jsonl",
+        snapshot_dir=snapshot_dir,
+        snapshot_limit=1,
+        cycles=1,
+        collector=fake_collector,
+        sleeper=fake_sleep,
+    )
+
+    incident_dir = snapshot_dir / "incidents" / "cycle-0001"
+
+    before = incident_dir / "before.json"
+    after = incident_dir / "after.json"
+
+    assert before.exists()
+    assert after.exists()
+
+    assert json.loads(
+        before.read_text(encoding="utf-8")
+    ) == baseline
+
+    assert json.loads(
+        after.read_text(encoding="utf-8")
+    ) == current
