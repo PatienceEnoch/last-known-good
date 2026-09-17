@@ -1,137 +1,495 @@
 # Network Flight Recorder
 
-An explainable, local-first network diagnostic tool that records a known-good Linux network
-state, detects what changed during an outage, and produces an evidence-based incident report.
+> **A black box for your network.**
 
-> **Project status:** Phase 3 in progress. The Linux collector, explainable diagnosis engine,
-> privacy controls, and isolated Docker failure-injection lab are validated. Terraform-managed
-> AWS infrastructure is now deployed with private, versioned, SSE-S3-encrypted evidence storage.
-> CloudWatch monitoring, automated evidence upload, dashboarding, and guarded remediation remain
-> planned work.
+When a network goes down, knowing that something broke is only the beginning.
+
+The more useful question is:
+
+**What changed right before it broke?**
+
+Network Flight Recorder is an explainable, local-first Linux network troubleshooting tool that captures a known-good network state, detects meaningful changes during an outage, correlates related symptoms, and produces an evidence-backed incident report.
+
+Instead of giving an operator a collection of unrelated alerts, the goal is to reconstruct the story of the incident:
+
+**Healthy state → Change → Failure → Evidence → Likely cause**
+
+[![CI and Security](https://github.com/PatienceEnoch/network-flight-recorder/actions/workflows/test.yml/badge.svg)](https://github.com/PatienceEnoch/network-flight-recorder/actions/workflows/test.yml)
+
+---
 
 ## Why this exists
 
-Traditional monitoring tells an operator that something is down. Network Flight Recorder is
-designed to answer the next question: **What changed immediately before the failure?**
+Traditional monitoring is good at telling an operator:
 
-The MVP records routes, interfaces, DNS resolvers, failed services, and optional reachability
-probes. It compares a healthy baseline with a later snapshot, correlates related symptoms into
-one likely root cause, and explains each change with evidence and a verification step.
+> Something is down.
 
-## Two-minute demonstration
+But troubleshooting usually begins with a harder question:
+
+> What changed immediately before the failure?
+
+Network Flight Recorder is designed to help answer that question.
+
+It records important parts of a healthy Linux network state, compares them with a later snapshot, identifies meaningful differences, and correlates related symptoms into a likely root cause.
+
+The project brings together network troubleshooting, Linux administration, observability, incident response, security, cloud infrastructure, and automation.
+
+---
+
+## What it records
+
+A snapshot can include:
+
+- Routes and default gateway
+- Network interfaces
+- IP addresses
+- DNS resolvers
+- Failed systemd services
+- Reachability probes
+- DNS lookup results
+- Latency
+- Packet loss
+- MTU information
+
+The system can then compare a known-good baseline against the current state.
+
+---
+
+## From symptoms to diagnosis
+
+A basic monitoring tool might report:
+
+```text
+Default route missing
+External probe failed
+DNS lookup failed
+```
+
+Network Flight Recorder attempts to connect those symptoms.
+
+For example:
+
+```text
+Default route disappeared
+        |
+External reachability failed
+        |
+Multiple network probes failed
+        |
+Likely diagnosis:
+
+Default gateway or routing failure
+Confidence: HIGH
+```
+
+The diagnosis is accompanied by the evidence that produced it.
+
+This makes the result easier to investigate and verify instead of simply producing more alerts.
+
+---
+
+## Quick start
+
+Create an isolated Python environment:
 
 ```bash
-# Install in an isolated environment
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e ".[dev]"
+```
 
-# Capture a known-good baseline
-nfr snapshot --probe 1.1.1.1 --dns example.com --output snapshots/baseline.json
+Capture a known-good baseline:
 
-# Make an authorized change in a disposable lab, then capture current state
-nfr snapshot --probe 1.1.1.1 --dns example.com --output snapshots/current.json
+```bash
+nfr snapshot \
+  --probe 1.1.1.1 \
+  --dns example.com \
+  --output snapshots/baseline.json
+```
 
-# Reconstruct the incident
-nfr compare snapshots/baseline.json snapshots/current.json \
+After an authorized network change or outage, capture the current state:
+
+```bash
+nfr snapshot \
+  --probe 1.1.1.1 \
+  --dns example.com \
+  --output snapshots/current.json
+```
+
+Compare the two states:
+
+```bash
+nfr compare \
+  snapshots/baseline.json \
+  snapshots/current.json \
   --output reports/incident.md
 ```
 
-To pseudonymize hostnames, IP addresses, and probe targets while keeping comparisons stable:
+No Linux lab available?
 
-```bash
-export NFR_REDACTION_KEY="use-a-long-private-value"
-nfr snapshot --redact --probe 1.1.1.1 --dns example.com --output snapshots/shared.json
-```
-
-Retention cleanup is a dry run unless `--apply` is supplied:
-
-```bash
-nfr prune --directory snapshots --keep 100 --max-age-days 30
-nfr prune --directory snapshots --keep 100 --max-age-days 30 --apply
-```
-
-No Linux lab available yet? Run the included fixture demonstration:
+Run the included fixture demonstration:
 
 ```bash
 nfr compare tests/fixtures/healthy.json tests/fixtures/broken.json
 ```
 
-Have Docker Desktop or Docker Engine? Run the reproducible outage lab:
+---
+
+## Reproducible outage lab
+
+The project includes a Docker-based failure-injection lab that creates a real networking failure inside an isolated container.
+
+Run:
 
 ```bash
 ./lab/run_demo.sh
 ```
 
-It safely removes the default route only inside a disposable container, records the outage,
-generates `reports/incident.md`, and restores the lab. See [the lab guide](docs/docker-lab.md).
+The demonstration:
 
-## Validated outage demonstration
+1. Creates a disposable Docker environment.
+2. Records the healthy network state.
+3. Removes the container's default route.
+4. Captures the resulting outage.
+5. Compares the healthy and broken states.
+6. Diagnoses the routing failure.
+7. Generates an incident report.
+8. Restores the Docker-managed network.
 
-On September 14, 2026, the complete lab was run on Ubuntu 24.04.4 LTS inside Oracle VirtualBox
-with Docker Engine 29.1.3 and Docker Compose 2.40.3. All 11 automated tests passed before the
-demonstration.
-
-The lab removed the container's default route. Network Flight Recorder captured the resulting
-loss of external reachability, produced two evidence-backed findings, and diagnosed **Default
-gateway or routing failure** with **HIGH confidence**. The cleanup routine then restarted the
-container and restored its Docker-managed network.
+The failure occurs only inside the disposable container.
 
 ![Network Flight Recorder capturing and diagnosing the container outage](docs/assets/docker-demo-report-1.jpeg)
 
 ![Completed incident report and returned terminal prompt](docs/assets/docker-demo-report-2.jpeg)
 
-See [the full validation record](docs/validated-demo.md).
+See the [full validation record](docs/validated-demo.md).
 
-Example findings include:
+---
 
-- Default route disappeared
-- DNS configuration became empty or changed
-- A DNS lookup failed or became unusually slow
-- A previously healthy interface went down
-- A reachability probe began failing
-- A new systemd service failure appeared
+## What it can detect
 
-When several symptoms share a cause, the report leads with an explainable diagnosis such as
-`Local interface or link failure — HIGH confidence` and lists the supporting evidence.
+Network Flight Recorder can identify changes such as:
 
-## Skills demonstrated
+- Default route disappearance
+- Gateway or routing changes
+- DNS configuration changes
+- DNS lookup failures
+- Resolver response changes
+- Interface state changes
+- Address changes
+- MTU changes
+- Increased latency
+- Packet loss
+- Reachability failures
+- Newly failed systemd services
 
-- TCP/IP troubleshooting, routing, DNS, interfaces, gateways, and reachability
-- Linux administration, systemd, logs, permissions, and safe subprocess handling
-- Python packaging, structured JSON, command-line design, and automated testing
-- Incident-response documentation and evidence-based diagnosis
-- Secure-by-default design and human-approved remediation planning
-- GitHub Actions continuous integration
-- Docker-based failure injection with an isolated network namespace
-- Terraform infrastructure as code, AWS IAM, S3 security, encryption, versioning, and public-access controls
+When multiple symptoms point to the same underlying problem, the report can lead with a correlated diagnosis such as:
+
+```text
+Default gateway or routing failure — HIGH confidence
+```
+
+or:
+
+```text
+Local interface or link failure — HIGH confidence
+```
+
+Supporting evidence is included with the diagnosis.
+
+---
+
+## Privacy and evidence protection
+
+Network diagnostic data can expose sensitive infrastructure information.
+
+Network Flight Recorder supports deterministic pseudonymization of:
+
+- Hostnames
+- IP addresses
+- Probe targets
+
+Set a private redaction key:
+
+```bash
+export NFR_REDACTION_KEY="use-a-long-private-value"
+```
+
+Then capture a protected snapshot:
+
+```bash
+nfr snapshot \
+  --redact \
+  --probe 1.1.1.1 \
+  --dns example.com \
+  --output snapshots/shared.json
+```
+
+The same values remain comparable across snapshots without exposing the original network information.
+
+Retention cleanup also defaults to a dry run:
+
+```bash
+nfr prune --directory snapshots --keep 100 --max-age-days 30
+```
+
+Changes are only applied when explicitly requested:
+
+```bash
+nfr prune \
+  --directory snapshots \
+  --keep 100 \
+  --max-age-days 30 \
+  --apply
+```
+
+---
+
+## AWS operations layer
+
+Network Flight Recorder also includes a Terraform-managed AWS operations layer.
+
+Current capabilities include:
+
+- Private S3 evidence storage
+- S3 versioning
+- SSE-S3 encryption
+- Encryption in transit
+- Public-access blocking
+- Redacted evidence upload
+- CloudWatch health metrics
+- Incident summary storage
+- Minimal operational dashboarding
+
+Infrastructure is defined under:
+
+```text
+infra/aws/
+```
+
+This keeps the AWS environment reproducible and managed as code.
+
+---
+
+## Monitoring and incident workflow
+
+The project has grown beyond one-time snapshot comparison.
+
+It now includes functionality for:
+
+- Network monitoring
+- Incident tracking
+- Event timelines
+- Incident summaries
+- Watch behavior
+- CloudWatch integration
+- Evidence recording
+- Privacy controls
+- Guarded remediation planning
+
+The goal is to move from simply detecting a failure toward reconstructing the complete sequence of events surrounding it.
+
+---
+
+## Guarded recovery
+
+Network Flight Recorder is intentionally conservative about remediation.
+
+Detection and diagnosis can be automated.
+
+Making changes to a network requires stronger safeguards.
+
+The recovery layer therefore uses:
+
+- Explicitly allowed remediation actions
+- Approval-required remediation plans
+- Human review before changes
+- Guardrails around supported actions
+
+Automatic recovery verification and rollback are the next major milestones.
+
+---
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A[Healthy snapshot] --> C[Change analyzer]
-    B[Current snapshot] --> C
-    C --> D[Incident findings]
-    D --> E[Markdown or JSON report]
+    A[Healthy Network] --> B[Baseline Snapshot]
+    C[Current Network] --> D[Current Snapshot]
+
+    B --> E[Change Analyzer]
+    D --> E
+
+    E --> F[Evidence]
+    F --> G[Root Cause Correlation]
+    G --> H[Incident Report]
+
+    H --> I[Redaction]
+    I --> J[AWS Evidence Storage]
+    J --> K[CloudWatch and Dashboard]
+
+    G --> L[Guarded Remediation Plan]
 ```
 
-See [the architecture document](docs/architecture.md) and [project roadmap](ROADMAP.md).
+See the [architecture document](docs/architecture.md) for more detail.
 
-## Scope and safety
+---
 
-The current collector uses read-only local commands. It does not scan other systems, capture
-packets, collect credentials, or make network changes. Use it only on systems and networks you
-own or are authorized to administer. Review [SECURITY.md](SECURITY.md) before sharing snapshots.
+## Continuous integration
 
-## Planned innovation
+Every push and pull request is checked automatically with GitHub Actions.
 
-The project will evolve into a cloud-assisted network black box with a reproducible outage lab,
-correlated root-cause analysis, encrypted AWS evidence storage, Terraform-managed infrastructure,
-and approval-gated recovery with automatic verification and rollback.
+The CI pipeline currently includes:
+
+```text
+Python
+├── Ruff linting
+└── pytest
+
+Security
+└── Python dependency audit
+
+Infrastructure
+├── terraform fmt
+├── terraform init
+└── terraform validate
+```
+
+This continuously checks the application, dependencies, and infrastructure configuration.
+
+---
+
+## Project roadmap
+
+### Phase 1 — Local Flight Recorder
+
+Completed:
+
+- Capture Linux network state
+- Compare healthy and current snapshots
+- Generate Markdown and JSON incident reports
+- Test common outage signatures
+
+### Phase 2 — Explainable Diagnosis
+
+Completed:
+
+- Detect address, MTU, latency, and packet-loss changes
+- Detect DNS resolver behavior changes
+- Correlate related symptoms
+- Add snapshot redaction
+- Add retention controls
+- Build a reproducible Docker outage lab
+
+### Phase 3 — AWS Operations Layer
+
+Completed:
+
+- Terraform-managed AWS infrastructure
+- Private and encrypted S3 evidence storage
+- Redacted evidence upload
+- CloudWatch health metrics
+- Incident summaries
+- Minimal operational dashboard
+- CI security and infrastructure checks
+
+### Phase 4 — Guarded Recovery
+
+Completed:
+
+- Approval-required remediation plans
+- Explicit action allowlist
+- Safety guardrails
+
+In progress:
+
+- Verify recovery automatically
+- Produce before-and-after recovery reports
+- Demonstrate rollback when verification fails
+
+See [ROADMAP.md](ROADMAP.md) for the full roadmap.
+
+---
+
+## Technologies
+
+### Networking
+
+- TCP/IP
+- Routing
+- DNS
+- Network interfaces
+- Default gateways
+- Reachability testing
+- Latency
+- Packet loss
+
+### Development
+
+- Python
+- pytest
+- Ruff
+- Command-line application design
+- JSON
+- Git
+
+### Linux
+
+- Ubuntu
+- systemd
+- Network troubleshooting
+- Permissions
+- Safe subprocess execution
+
+### Cloud and Infrastructure
+
+- AWS
+- Amazon S3
+- Amazon CloudWatch
+- IAM
+- Terraform
+
+### DevOps and Security
+
+- GitHub Actions
+- Docker
+- Dependency auditing
+- Encryption
+- Evidence redaction
+- Infrastructure validation
+
+---
+
+## What this project demonstrates
+
+Network Flight Recorder is more than a Python application.
+
+It is a hands-on project exploring how networking, cloud engineering, security, automation, and incident response work together.
+
+The project demonstrates:
+
+- Systematic network troubleshooting
+- Linux administration
+- Root-cause analysis
+- Network observability
+- Secure handling of diagnostic evidence
+- Infrastructure as code
+- AWS operations
+- Automated testing
+- Continuous integration
+- Safe failure injection
+- Human-controlled remediation
+
+At the center of the project is one question:
+
+> **What changed?**
+
+---
 
 ## Author
 
-Ashley “Patience” Hopkins  
-WGU B.S. Cloud and Network Engineering — AWS Track  
+**Ashley “Patience” Hopkins**
+
+WGU B.S. Cloud and Network Engineering — AWS Track
+
 CompTIA A+ · CompTIA Network+ · LPI Linux Essentials · ITIL 4 Foundation
