@@ -507,14 +507,18 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "watch":
-        completed = watch_network(
-            interval_seconds=args.interval,
-            event_log=args.log,
-            probe_hosts=args.probe,
-            dns_names=args.dns,
-            cycles=args.cycles,
-            reporter=_report_watch_cycle,
-        )
+        try:
+            completed = watch_network(
+                interval_seconds=args.interval,
+                event_log=args.log,
+                probe_hosts=args.probe,
+                dns_names=args.dns,
+                cycles=args.cycles,
+                reporter=_report_watch_cycle,
+            )
+        except KeyboardInterrupt:
+            print("\nWatch stopped.")
+            return 0
 
         print(f"Watch completed: {completed} cycle(s)")
         return 0

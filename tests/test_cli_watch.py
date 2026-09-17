@@ -80,3 +80,30 @@ def test_watch_command_reports_cycle_status(monkeypatch, tmp_path, capsys) -> No
     assert "Cycle 1: no changes" in output
     assert "Cycle 2: 3 finding(s) recorded" in output
     assert "Watch completed: 2 cycle(s)" in output
+
+
+def test_watch_command_stops_cleanly_on_keyboard_interrupt(
+    monkeypatch,
+    tmp_path,
+    capsys,
+) -> None:
+    def fake_watch_network(**kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(
+        "network_flight_recorder.cli.watch_network",
+        fake_watch_network,
+    )
+
+    result = main(
+        [
+            "watch",
+            "--log",
+            str(tmp_path / "events.jsonl"),
+        ]
+    )
+
+    output = capsys.readouterr().out
+
+    assert result == 0
+    assert "Watch stopped." in output
