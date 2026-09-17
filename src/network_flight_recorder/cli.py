@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from .analyzer import (
 from .cloudwatch import publish_snapshot_metrics
 from .collector import collect_snapshot
 from .event_recorder import (
+    NetworkEvent,
     events_as_timeline,
     findings_to_events,
     load_events,
@@ -76,6 +78,47 @@ def _parse_since(value: str) -> timedelta:
     raise argparse.ArgumentTypeError(
         "Duration unit must be m, h, or d"
     )
+
+
+def _event_summary_as_markdown(events: list[NetworkEvent]) -> str:
+    """Render a concise summary of recorded network events."""
+    lines = ["# Event Summary", ""]
+
+    lines.append(f"Total events: {len(events)}")
+
+    if not events:
+        return "\n".join(lines)
+
+    ordered = sorted(events, key=lambda event: event.timestamp)
+
+    lines.append(
+        f"First observed: {ordered[0].timestamp.astimezone(UTC).isoformat()}"
+    )
+    lines.append(
+        f"Last observed: {ordered[-1].timestamp.astimezone(UTC).isoformat()}"
+    )
+
+    severity_counts = Counter(
+        event.metadata.get("severity", "unknown")
+        for event in events
+    )
+
+    category_counts = Counter(
+        event.event_type
+        for event in events
+    )
+
+    lines.extend(["", "## Severity"])
+
+    for severity, count in sorted(severity_counts.items()):
+        lines.append(f"- {severity}: {count}")
+
+    lines.extend(["", "## Categories"])
+
+    for category, count in sorted(category_counts.items()):
+        lines.append(f"- {category}: {count}")
+
+    return "\n".join(lines)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -197,6 +240,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional file to write the timeline to",
     )
 
+    summary = commands.add_parser(
+        "summary",
+        help="Summarize recorded network events",
+    )
+
+    summary.add_argument(
+        "--log",
+        type=Path,
+        default=Path("events/events.jsonl"),
+        help="Path to the JSONL event log",
+    )
+
+    summary.add_argument(
+        "--output",
+        type=Path,
+        help="Optional file to write the summary to",
+    )
+
     prune = commands.add_parser(
         "prune",
         help="Plan or apply snapshot retention",
@@ -297,6 +358,21 @@ def main(argv: list[str] | None = None) -> int:
                 report + "\n",
             )
             print(f"Timeline written to {args.output}")
+        else:
+            print(report)
+
+        return 0
+
+    if args.command == "summary":
+        events = load_events(args.log)
+        report = _event_summary_as_markdown(events)
+
+        if args.output:
+            _write(
+                args.output,
+                report + "\n",
+            )
+            print(f"Summary written to {args.output}")
         else:
             print(report)
 
