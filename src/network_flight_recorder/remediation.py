@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from typing import Any
 
 from .analyzer import Diagnosis
+from .guardrails import require_allowed_action
 
 
 @dataclass(frozen=True)
@@ -115,3 +117,21 @@ def remediation_plan_as_markdown(
         f"**Rationale:** {plan.rationale}\n\n"
         f"**Verification:** {plan.verification}\n"
     )
+
+
+
+def execute_remediation(
+    plan: RemediationPlan,
+    *,
+    approved: bool,
+    executor: Callable[[str], None],
+) -> None:
+    """Execute an allowlisted remediation only after explicit approval."""
+    if not approved:
+        raise PermissionError(
+            "Remediation requires explicit approval"
+        )
+
+    require_allowed_action(plan.action_id)
+
+    executor(plan.action_id)

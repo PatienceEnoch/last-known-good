@@ -105,3 +105,105 @@ def test_cli_compare_includes_remediation_plan(capsys):
     assert "## Remediation Plan" in output
     assert "restore_interface_connectivity" in output
     assert "Approval required:** YES" in output
+
+
+def test_execute_remediation_requires_explicit_approval() -> None:
+    import pytest
+
+    from network_flight_recorder.remediation import execute_remediation
+
+    diagnosis = Diagnosis(
+        likely_cause="Default gateway or routing failure",
+        confidence="high",
+        rationale="The default route disappeared.",
+        supporting_findings=("Default route disappeared",),
+        verification="Verify the default route is restored.",
+    )
+
+    plan = generate_remediation_plan(diagnosis)
+
+    assert plan is not None
+
+    executed = []
+
+    def fake_executor(action_id):
+        executed.append(action_id)
+
+    with pytest.raises(
+        PermissionError,
+        match="explicit approval",
+    ):
+        execute_remediation(
+            plan,
+            approved=False,
+            executor=fake_executor,
+        )
+
+    assert executed == []
+
+
+def test_execute_remediation_runs_approved_allowlisted_action() -> None:
+    from network_flight_recorder.remediation import execute_remediation
+
+    diagnosis = Diagnosis(
+        likely_cause="Default gateway or routing failure",
+        confidence="high",
+        rationale="The default route disappeared.",
+        supporting_findings=("Default route disappeared",),
+        verification="Verify the default route is restored.",
+    )
+
+    plan = generate_remediation_plan(diagnosis)
+
+    assert plan is not None
+
+    executed = []
+
+    def fake_executor(action_id):
+        executed.append(action_id)
+
+    execute_remediation(
+        plan,
+        approved=True,
+        executor=fake_executor,
+    )
+
+    assert executed == [
+        "renew_network_configuration",
+    ]
+
+
+def test_execute_remediation_blocks_unallowlisted_action() -> None:
+    import pytest
+
+    from network_flight_recorder.remediation import execute_remediation
+
+    diagnosis = Diagnosis(
+        likely_cause="Unexpected network condition",
+        confidence="low",
+        rationale="The condition does not match a supported pattern.",
+        supporting_findings=("Unknown condition",),
+        verification="Inspect the network manually.",
+    )
+
+    plan = generate_remediation_plan(diagnosis)
+
+    assert plan is not None
+    assert plan.action_id == "manual_review"
+
+    executed = []
+
+    def fake_executor(action_id):
+        executed.append(action_id)
+
+    with pytest.raises(
+        PermissionError,
+        match="not allowlisted",
+    ):
+        execute_remediation(
+            plan,
+            approved=True,
+            executor=fake_executor,
+        )
+
+    assert executed == []
