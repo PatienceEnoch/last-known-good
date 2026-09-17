@@ -5,6 +5,8 @@ from network_flight_recorder.event_recorder import (
     EventRecorder,
     NetworkEvent,
     findings_to_events,
+    load_events,
+    save_event,
 )
 
 
@@ -192,3 +194,28 @@ def test_findings_to_events_uses_snapshot_timestamp() -> None:
     assert event.message == "Default route disappeared"
     assert event.metadata["severity"] == "critical"
     assert event.metadata["evidence"] == "The current snapshot has no default route."
+
+
+def test_save_and_load_events(tmp_path) -> None:
+    event = NetworkEvent(
+        event_type="routing",
+        source="analyzer",
+        message="Default route disappeared",
+        timestamp=datetime(
+            2026,
+            9,
+            13,
+            12,
+            5,
+            tzinfo=UTC,
+        ),
+        metadata={"severity": "critical"},
+    )
+
+    path = tmp_path / "events.jsonl"
+
+    save_event(path, event)
+
+    events = load_events(path)
+
+    assert events == [event]

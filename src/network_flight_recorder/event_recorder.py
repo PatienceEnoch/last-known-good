@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from .analyzer import Finding
@@ -132,3 +134,44 @@ def findings_to_events(
         )
         for finding in findings
     ]
+
+def save_event(path: Path, event: NetworkEvent) -> None:
+    """Append a network event to a JSON Lines event log."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    payload = {
+        "event_type": event.event_type,
+        "source": event.source,
+        "message": event.message,
+        "timestamp": event.timestamp.isoformat(),
+        "metadata": event.metadata,
+    }
+
+    with path.open("a", encoding="utf-8") as file:
+        file.write(json.dumps(payload) + "\n")
+
+
+def load_events(path: Path) -> list[NetworkEvent]:
+    """Load network events from a JSON Lines event log."""
+    if not path.exists():
+        return []
+
+    events = []
+
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+
+        payload = json.loads(line)
+
+        events.append(
+            NetworkEvent(
+                event_type=payload["event_type"],
+                source=payload["source"],
+                message=payload["message"],
+                timestamp=datetime.fromisoformat(payload["timestamp"]),
+                metadata=payload.get("metadata", {}),
+            )
+        )
+
+    return sorted(events, key=lambda event: event.timestamp)
