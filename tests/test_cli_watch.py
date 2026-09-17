@@ -107,3 +107,37 @@ def test_watch_command_stops_cleanly_on_keyboard_interrupt(
 
     assert result == 0
     assert "Watch stopped." in output
+
+
+def test_watch_rejects_nonpositive_interval(tmp_path) -> None:
+    try:
+        main(
+            [
+                "watch",
+                "--interval",
+                "0",
+                "--log",
+                str(tmp_path / "events.jsonl"),
+            ]
+        )
+    except SystemExit as exc:
+        assert exc.code == 2
+    else:
+        raise AssertionError("Expected invalid interval to exit")
+
+
+def test_watch_rejects_nonpositive_cycles(tmp_path) -> None:
+    try:
+        main(
+            [
+                "watch",
+                "--cycles",
+                "0",
+                "--log",
+                str(tmp_path / "events.jsonl"),
+            ]
+        )
+    except SystemExit as exc:
+        assert exc.code == 2
+    else:
+        raise AssertionError("Expected invalid cycles to exit")

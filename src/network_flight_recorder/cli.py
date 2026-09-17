@@ -50,6 +50,31 @@ def _write(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def _positive_float(value: str) -> float:
+    """Parse a number that must be greater than zero."""
+    number = float(value)
+
+    if number <= 0:
+        raise argparse.ArgumentTypeError(
+            "Value must be greater than zero"
+        )
+
+    return number
+
+
+def _positive_int(value: str) -> int:
+    """Parse an integer that must be greater than zero."""
+    number = int(value)
+
+    if number <= 0:
+        raise argparse.ArgumentTypeError(
+            "Value must be greater than zero"
+        )
+
+    return number
+
+
+
 def _parse_since(value: str) -> timedelta:
     """Parse a duration such as 30m, 1h, or 2d."""
     if len(value) < 2:
@@ -344,14 +369,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     watch.add_argument(
         "--interval",
-        type=float,
+        type=_positive_float,
         default=30.0,
         help="Seconds between network snapshots",
     )
 
     watch.add_argument(
         "--cycles",
-        type=int,
+        type=_positive_int,
         help="Optional number of monitoring cycles",
     )
 
