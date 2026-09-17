@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import time
+from datetime import datetime
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -213,6 +214,17 @@ def watch_network(
                 )
                 status["status"] = "closed"
                 status["recovered_at"] = current["captured_at"]
+
+                started_at = datetime.fromisoformat(
+                    status["started_at"]
+                )
+                recovered_at = datetime.fromisoformat(
+                    status["recovered_at"]
+                )
+
+                status["duration_seconds"] = int(
+                    (recovered_at - started_at).total_seconds()
+                )
 
                 status_path.write_text(
                     json.dumps(
