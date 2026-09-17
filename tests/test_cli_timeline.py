@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from network_flight_recorder.cli import main
 from network_flight_recorder.event_recorder import NetworkEvent, save_event
@@ -82,3 +82,44 @@ def test_timeline_filters_by_source(tmp_path, capsys) -> None:
     assert result == 0
     assert "Gateway probe failed" in output
     assert "DNS configuration is empty" not in output
+
+
+def test_timeline_filters_by_since(tmp_path, capsys) -> None:
+    path = tmp_path / "events.jsonl"
+    now = datetime.now(UTC)
+
+    save_event(
+        path,
+        NetworkEvent(
+            event_type="dns",
+            source="analyzer",
+            message="Recent DNS failure",
+            timestamp=now - timedelta(minutes=30),
+        ),
+    )
+
+    save_event(
+        path,
+        NetworkEvent(
+            event_type="routing",
+            source="analyzer",
+            message="Old routing failure",
+            timestamp=now - timedelta(hours=2),
+        ),
+    )
+
+    result = main(
+        [
+            "timeline",
+            "--log",
+            str(path),
+            "--since",
+            "1h",
+        ]
+    )
+
+    output = capsys.readouterr().out
+
+    assert result == 0
+    assert "Recent DNS failure" in output
+    assert "Old routing failure" not in output

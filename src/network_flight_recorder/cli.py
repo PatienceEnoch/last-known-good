@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from .analyzer import (
@@ -39,6 +40,42 @@ def _load(path: Path) -> dict:
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def _parse_since(value: str) -> timedelta:
+    """Parse a duration such as 30m, 1h, or 2d."""
+    if len(value) < 2:
+        raise argparse.ArgumentTypeError(
+            "Duration must look like 30m, 1h, or 2d"
+        )
+
+    unit = value[-1].lower()
+    amount_text = value[:-1]
+
+    try:
+        amount = int(amount_text)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "Duration must look like 30m, 1h, or 2d"
+        ) from exc
+
+    if amount < 0:
+        raise argparse.ArgumentTypeError(
+            "Duration must be zero or greater"
+        )
+
+    if unit == "m":
+        return timedelta(minutes=amount)
+
+    if unit == "h":
+        return timedelta(hours=amount)
+
+    if unit == "d":
+        return timedelta(days=amount)
+
+    raise argparse.ArgumentTypeError(
+        "Duration unit must be m, h, or d"
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -148,6 +185,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     timeline.add_argument(
+        "--since",
+        type=_parse_since,
+        metavar="DURATION",
+        help="Show events from a recent duration such as 30m, 1h, or 2d",
+    )
+
+    timeline.add_argument(
         "--output",
         type=Path,
         help="Optional file to write the timeline to",
@@ -234,6 +278,15 @@ def main(argv: list[str] | None = None) -> int:
                 event
                 for event in events
                 if event.source == args.source
+            ]
+
+        if args.since:
+            cutoff = datetime.now(UTC) - args.since
+
+            events = [
+                event
+                for event in events
+                if event.timestamp >= cutoff
             ]
 
         report = events_as_timeline(events)
