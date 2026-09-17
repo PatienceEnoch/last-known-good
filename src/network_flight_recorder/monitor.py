@@ -14,6 +14,7 @@ from .event_recorder import findings_to_events, save_event
 Snapshot = dict[str, Any]
 Collector = Callable[[list[str], list[str]], Snapshot]
 Sleeper = Callable[[float], None]
+Reporter = Callable[[int, int], None]
 
 
 def record_transition(
@@ -50,6 +51,7 @@ def watch_network(
     cycles: int | None = None,
     collector: Collector = collect_snapshot,
     sleeper: Sleeper = time.sleep,
+    reporter: Reporter | None = None,
 ) -> int:
     """Continuously capture network state and record detected transitions."""
     probe_hosts = probe_hosts or []
@@ -70,13 +72,20 @@ def watch_network(
             dns_names,
         )
 
-        record_transition(
+        findings = record_transition(
             previous,
             current,
             event_log,
         )
 
-        previous = current
         completed += 1
+
+        if reporter is not None:
+            reporter(
+                completed,
+                len(findings),
+            )
+
+        previous = current
 
     return completed

@@ -38,12 +38,45 @@ def test_watch_command_starts_monitoring(monkeypatch, tmp_path, capsys) -> None:
     assert result == 0
     assert len(calls) == 1
 
-    assert calls[0] == {
-        "interval_seconds": 15.0,
-        "event_log": Path(event_log),
-        "probe_hosts": ["1.1.1.1"],
-        "dns_names": ["example.com"],
-        "cycles": 2,
-    }
+    call = calls[0]
 
+    assert call["interval_seconds"] == 15.0
+    assert call["event_log"] == Path(event_log)
+    assert call["probe_hosts"] == ["1.1.1.1"]
+    assert call["dns_names"] == ["example.com"]
+    assert call["cycles"] == 2
+    assert callable(call["reporter"])
+
+    assert "Watch completed: 2 cycle(s)" in output
+
+
+def test_watch_command_reports_cycle_status(monkeypatch, tmp_path, capsys) -> None:
+    def fake_watch_network(**kwargs):
+        reporter = kwargs["reporter"]
+
+        reporter(1, 0)
+        reporter(2, 3)
+
+        return 2
+
+    monkeypatch.setattr(
+        "network_flight_recorder.cli.watch_network",
+        fake_watch_network,
+    )
+
+    result = main(
+        [
+            "watch",
+            "--cycles",
+            "2",
+            "--log",
+            str(tmp_path / "events.jsonl"),
+        ]
+    )
+
+    output = capsys.readouterr().out
+
+    assert result == 0
+    assert "Cycle 1: no changes" in output
+    assert "Cycle 2: 3 finding(s) recorded" in output
     assert "Watch completed: 2 cycle(s)" in output

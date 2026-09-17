@@ -72,3 +72,35 @@ def test_watch_network_collects_and_records_transitions(tmp_path) -> None:
     assert completed == 1
     assert sleeps == [10]
     assert len(events) == 5
+
+
+def test_watch_network_reports_each_cycle(tmp_path) -> None:
+    baseline = json.loads(
+        (FIXTURES / "healthy.json").read_text(encoding="utf-8")
+    )
+    current = json.loads(
+        (FIXTURES / "broken.json").read_text(encoding="utf-8")
+    )
+
+    snapshots = iter([baseline, current])
+    reports = []
+
+    def fake_collector(probe_hosts, dns_names):
+        return next(snapshots)
+
+    def fake_sleep(seconds):
+        pass
+
+    def reporter(cycle, finding_count):
+        reports.append((cycle, finding_count))
+
+    watch_network(
+        interval_seconds=1,
+        event_log=tmp_path / "events.jsonl",
+        cycles=1,
+        collector=fake_collector,
+        sleeper=fake_sleep,
+        reporter=reporter,
+    )
+
+    assert reports == [(1, 5)]

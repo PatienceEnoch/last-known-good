@@ -183,6 +183,17 @@ def _add_event_filter_arguments(parser: argparse.ArgumentParser) -> None:
     )
 
 
+
+def _report_watch_cycle(cycle: int, finding_count: int) -> None:
+    """Print the result of one network monitoring cycle."""
+    if finding_count == 0:
+        print(f"Cycle {cycle}: no changes")
+        return
+
+    print(
+        f"Cycle {cycle}: {finding_count} finding(s) recorded"
+    )
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="nfr",
@@ -502,6 +513,7 @@ def main(argv: list[str] | None = None) -> int:
             probe_hosts=args.probe,
             dns_names=args.dns,
             cycles=args.cycles,
+            reporter=_report_watch_cycle,
         )
 
         print(f"Watch completed: {completed} cycle(s)")
