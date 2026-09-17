@@ -233,3 +233,46 @@ def test_watch_network_preserves_incident_evidence(tmp_path) -> None:
     assert json.loads(
         after.read_text(encoding="utf-8")
     ) == current
+
+
+def test_watch_network_writes_incident_report(tmp_path) -> None:
+    baseline = json.loads(
+        (FIXTURES / "healthy.json").read_text(encoding="utf-8")
+    )
+    current = json.loads(
+        (FIXTURES / "broken.json").read_text(encoding="utf-8")
+    )
+
+    snapshots = iter([baseline, current])
+
+    def fake_collector(probe_hosts, dns_names):
+        return next(snapshots)
+
+    def fake_sleep(seconds):
+        pass
+
+    snapshot_dir = tmp_path / "snapshots"
+
+    watch_network(
+        interval_seconds=1,
+        event_log=tmp_path / "events.jsonl",
+        snapshot_dir=snapshot_dir,
+        cycles=1,
+        collector=fake_collector,
+        sleeper=fake_sleep,
+    )
+
+    report = (
+        snapshot_dir
+        / "incidents"
+        / "cycle-0001"
+        / "report.md"
+    )
+
+    assert report.exists()
+
+    content = report.read_text(encoding="utf-8")
+
+    assert "# Network Incident Report" in content
+    assert "Default route disappeared" in content
+    assert "Probe to 1.1.1.1 failed" in content

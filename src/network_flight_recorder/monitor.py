@@ -8,7 +8,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from .analyzer import Finding, analyze
+from .analyzer import Finding, analyze, findings_as_markdown
 from .collector import collect_snapshot
 from .event_recorder import findings_to_events, save_event
 
@@ -163,6 +163,15 @@ def watch_network(
                     current,
                     indent=2,
                     sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
+            (incident_dir / "report.md").write_text(
+                findings_as_markdown(
+                    previous,
+                    current,
+                    findings,
                 ),
                 encoding="utf-8",
             )
