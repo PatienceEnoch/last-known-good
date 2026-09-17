@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
+from .analyzer import Finding
+
 
 @dataclass(frozen=True, slots=True)
 class NetworkEvent:
@@ -108,3 +110,25 @@ def events_as_timeline(events: list[NetworkEvent]) -> str:
         )
 
     return "\n".join(lines)
+
+def findings_to_events(
+    findings: list[Finding],
+    captured_at: str,
+) -> list[NetworkEvent]:
+    """Convert analyzer findings into timestamped network events."""
+    timestamp = datetime.fromisoformat(captured_at)
+
+    return [
+        NetworkEvent(
+            event_type=finding.category,
+            source="analyzer",
+            message=finding.title,
+            timestamp=timestamp,
+            metadata={
+                "severity": finding.severity,
+                "evidence": finding.evidence,
+                "recommendation": finding.recommendation,
+            },
+        )
+        for finding in findings
+    ]

@@ -1,6 +1,11 @@
 from datetime import UTC, datetime, timedelta
 
-from network_flight_recorder.event_recorder import EventRecorder, NetworkEvent
+from network_flight_recorder.analyzer import Finding
+from network_flight_recorder.event_recorder import (
+    EventRecorder,
+    NetworkEvent,
+    findings_to_events,
+)
 
 
 def test_record_event() -> None:
@@ -155,3 +160,35 @@ def test_query_events_combines_filters() -> None:
     )
 
     assert events == [matching]
+
+def test_findings_to_events_uses_snapshot_timestamp() -> None:
+    finding = Finding(
+        severity="critical",
+        category="routing",
+        title="Default route disappeared",
+        evidence="The current snapshot has no default route.",
+        recommendation="Restore the expected gateway.",
+    )
+
+    events = findings_to_events(
+        [finding],
+        "2026-09-13T12:05:00+00:00",
+    )
+
+    assert len(events) == 1
+
+    event = events[0]
+
+    assert event.timestamp == datetime(
+        2026,
+        9,
+        13,
+        12,
+        5,
+        tzinfo=UTC,
+    )
+    assert event.source == "analyzer"
+    assert event.event_type == "routing"
+    assert event.message == "Default route disappeared"
+    assert event.metadata["severity"] == "critical"
+    assert event.metadata["evidence"] == "The current snapshot has no default route."
