@@ -16,6 +16,7 @@ from .analyzer import (
 )
 from .cloudwatch import publish_snapshot_metrics
 from .collector import collect_snapshot
+from .event_recorder import findings_to_events, save_event
 from .incidents import build_incident_summary, publish_incident_summary
 from .privacy import redact_snapshot
 from .remediation import (
@@ -216,6 +217,17 @@ def main(argv: list[str] | None = None) -> int:
         baseline,
         current,
     )
+
+    events = findings_to_events(
+        findings,
+        current["captured_at"],
+    )
+
+    for event in events:
+        save_event(
+            Path("events/events.jsonl"),
+            event,
+        )
 
     diagnosis = diagnose(findings)
 
