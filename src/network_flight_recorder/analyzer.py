@@ -58,6 +58,20 @@ def analyze(baseline: dict[str, Any], current: dict[str, Any]) -> list[Finding]:
                 "Restore the expected gateway or renew the interface's DHCP lease, then retest connectivity.",
             )
         )
+    elif not old_default and new_default:
+        findings.append(
+            Finding(
+                "info",
+                "routing",
+                "Default route restored",
+                (
+                    "The previous snapshot had no default route; "
+                    f"the current snapshot uses {new_default.get('gateway', 'an on-link route')} "
+                    f"via {new_default.get('dev', 'unknown')}."
+                ),
+                "Verify external connectivity remains stable.",
+            )
+        )
     elif old_default and new_default and (
         old_default.get("gateway"), old_default.get("dev")
     ) != (new_default.get("gateway"), new_default.get("dev")):
@@ -82,6 +96,16 @@ def analyze(baseline: dict[str, Any], current: dict[str, Any]) -> list[Finding]:
                 "DNS configuration is empty",
                 f"Baseline resolvers were {', '.join(old_dns)}; no current resolver was found.",
                 "Restore an approved resolver and test name resolution separately from IP connectivity.",
+            )
+        )
+    elif not old_dns and new_dns:
+        findings.append(
+            Finding(
+                "info",
+                "dns",
+                "DNS configuration restored",
+                f"Resolvers are available again: {', '.join(new_dns)}.",
+                "Verify name resolution remains stable.",
             )
         )
     elif old_dns != new_dns:
@@ -151,6 +175,19 @@ def analyze(baseline: dict[str, Any], current: dict[str, Any]) -> list[Finding]:
                     "Check link state, switch port status, cabling, and the interface configuration.",
                 )
             )
+        elif old.get("state") != "UP" and new.get("state") == "UP":
+            findings.append(
+                Finding(
+                    "info",
+                    "interface",
+                    f"Interface {name} is back up",
+                    (
+                        f"State changed from {old.get('state', 'UNKNOWN')} "
+                        "to UP."
+                    ),
+                    "Verify addressing, routing, and connectivity remain stable.",
+                )
+            )
         else:
             if old.get("mtu") and new.get("mtu") and old.get("mtu") != new.get("mtu"):
                 findings.append(
@@ -190,6 +227,16 @@ def analyze(baseline: dict[str, Any], current: dict[str, Any]) -> list[Finding]:
                     f"Probe to {probe.get('host')} failed",
                     "The target was reachable in the baseline and is unreachable now.",
                     "Test the local gateway, routing, DNS, and upstream connectivity in that order.",
+                )
+            )
+        elif old and not old.get("reachable") and probe.get("reachable"):
+            findings.append(
+                Finding(
+                    "info",
+                    "connectivity",
+                    f"Probe to {probe.get('host')} recovered",
+                    "The target was unreachable previously and is reachable again.",
+                    "Continue monitoring to confirm connectivity remains stable.",
                 )
             )
         elif old and old.get("reachable") and probe.get("reachable"):
@@ -232,6 +279,17 @@ def analyze(baseline: dict[str, Any], current: dict[str, Any]) -> list[Finding]:
                 f"Service failure detected: {service}",
                 "The service is failed now but was not failed in the baseline.",
                 f"Inspect `systemctl status {service}` and `journalctl -u {service}` before restarting it.",
+            )
+        )
+
+    for service in sorted(old_failed - new_failed):
+        findings.append(
+            Finding(
+                "info",
+                "service",
+                f"Service recovered: {service}",
+                "The service was failed previously and is no longer failed.",
+                f"Verify `systemctl status {service}` remains healthy.",
             )
         )
 

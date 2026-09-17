@@ -116,3 +116,29 @@ def test_report_places_correlated_diagnosis_before_individual_findings():
     report = findings_as_markdown(baseline, current, analyze(baseline, current))
     assert "## Likely root cause" in report
     assert report.index("## Likely root cause") < report.index("## 1.")
+
+
+def test_detects_network_recovery() -> None:
+    findings = analyze(
+        load("broken.json"),
+        load("healthy.json"),
+    )
+
+    titles = {finding.title for finding in findings}
+
+    assert "Default route restored" in titles
+    assert "DNS configuration restored" in titles
+    assert "Interface eth0 is back up" in titles
+    assert "Probe to 1.1.1.1 recovered" in titles
+    assert "Service recovered: systemd-networkd.service" in titles
+
+    recovery_findings = [
+        finding
+        for finding in findings
+        if finding.title in titles
+    ]
+
+    assert all(
+        finding.severity == "info"
+        for finding in recovery_findings
+    )
