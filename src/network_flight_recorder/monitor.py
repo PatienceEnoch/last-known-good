@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -46,6 +47,7 @@ def watch_network(
     *,
     interval_seconds: float,
     event_log: Path,
+    snapshot_dir: Path | None = None,
     probe_hosts: list[str] | None = None,
     dns_names: list[str] | None = None,
     cycles: int | None = None,
@@ -62,6 +64,22 @@ def watch_network(
         dns_names,
     )
 
+    if snapshot_dir is not None:
+        snapshot_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        (
+            snapshot_dir / "0000-baseline.json"
+        ).write_text(
+            json.dumps(
+                previous,
+                indent=2,
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+
     completed = 0
 
     while cycles is None or completed < cycles:
@@ -71,6 +89,18 @@ def watch_network(
             probe_hosts,
             dns_names,
         )
+
+        if snapshot_dir is not None:
+            (
+                snapshot_dir / f"{completed + 1:04d}.json"
+            ).write_text(
+                json.dumps(
+                    current,
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
 
         findings = record_transition(
             previous,

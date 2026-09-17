@@ -141,3 +141,34 @@ def test_watch_rejects_nonpositive_cycles(tmp_path) -> None:
         assert exc.code == 2
     else:
         raise AssertionError("Expected invalid cycles to exit")
+
+
+def test_watch_command_passes_snapshot_directory(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    calls = []
+
+    def fake_watch_network(**kwargs):
+        calls.append(kwargs)
+        return 1
+
+    monkeypatch.setattr(
+        "network_flight_recorder.cli.watch_network",
+        fake_watch_network,
+    )
+
+    snapshot_dir = tmp_path / "snapshots"
+
+    result = main(
+        [
+            "watch",
+            "--cycles",
+            "1",
+            "--snapshot-dir",
+            str(snapshot_dir),
+        ]
+    )
+
+    assert result == 0
+    assert calls[0]["snapshot_dir"] == snapshot_dir

@@ -401,6 +401,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to the JSONL event log",
     )
 
+    watch.add_argument(
+        "--snapshot-dir",
+        type=Path,
+        help="Optional directory for preserving watch snapshots",
+    )
+
     prune = commands.add_parser(
         "prune",
         help="Plan or apply snapshot retention",
@@ -536,6 +542,7 @@ def main(argv: list[str] | None = None) -> int:
             completed = watch_network(
                 interval_seconds=args.interval,
                 event_log=args.log,
+                snapshot_dir=args.snapshot_dir,
                 probe_hosts=args.probe,
                 dns_names=args.dns,
                 cycles=args.cycles,
