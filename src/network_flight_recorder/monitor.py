@@ -43,11 +43,28 @@ def record_transition(
     return findings
 
 
+def _enforce_snapshot_limit(
+    snapshot_dir: Path,
+    snapshot_limit: int | None,
+) -> None:
+    """Keep only the newest snapshot files when a limit is configured."""
+    if snapshot_limit is None:
+        return
+
+    files = sorted(snapshot_dir.glob("*.json"))
+
+    while len(files) > snapshot_limit:
+        files[0].unlink()
+        files.pop(0)
+
+
+
 def watch_network(
     *,
     interval_seconds: float,
     event_log: Path,
     snapshot_dir: Path | None = None,
+    snapshot_limit: int | None = None,
     probe_hosts: list[str] | None = None,
     dns_names: list[str] | None = None,
     cycles: int | None = None,
@@ -80,6 +97,11 @@ def watch_network(
             encoding="utf-8",
         )
 
+        _enforce_snapshot_limit(
+            snapshot_dir,
+            snapshot_limit,
+        )
+
     completed = 0
 
     while cycles is None or completed < cycles:
@@ -100,6 +122,11 @@ def watch_network(
                     sort_keys=True,
                 ),
                 encoding="utf-8",
+            )
+
+            _enforce_snapshot_limit(
+                snapshot_dir,
+                snapshot_limit,
             )
 
         findings = record_transition(

@@ -147,3 +147,44 @@ def test_watch_network_preserves_snapshot_history(tmp_path) -> None:
     assert json.loads(
         files[1].read_text(encoding="utf-8")
     ) == current
+
+
+def test_watch_network_limits_snapshot_history(tmp_path) -> None:
+    baseline = json.loads(
+        (FIXTURES / "healthy.json").read_text(encoding="utf-8")
+    )
+
+    snapshots = iter(
+        [
+            baseline,
+            json.loads(json.dumps(baseline)),
+            json.loads(json.dumps(baseline)),
+            json.loads(json.dumps(baseline)),
+        ]
+    )
+
+    def fake_collector(probe_hosts, dns_names):
+        return next(snapshots)
+
+    def fake_sleep(seconds):
+        pass
+
+    snapshot_dir = tmp_path / "snapshots"
+
+    watch_network(
+        interval_seconds=1,
+        event_log=tmp_path / "events.jsonl",
+        snapshot_dir=snapshot_dir,
+        snapshot_limit=3,
+        cycles=3,
+        collector=fake_collector,
+        sleeper=fake_sleep,
+    )
+
+    files = sorted(snapshot_dir.glob("*.json"))
+
+    assert [path.name for path in files] == [
+        "0001.json",
+        "0002.json",
+        "0003.json",
+    ]

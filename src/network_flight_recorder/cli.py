@@ -407,6 +407,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional directory for preserving watch snapshots",
     )
 
+    watch.add_argument(
+        "--snapshot-limit",
+        type=_positive_int,
+        help="Maximum number of watch snapshots to keep",
+    )
+
     prune = commands.add_parser(
         "prune",
         help="Plan or apply snapshot retention",
@@ -543,6 +549,7 @@ def main(argv: list[str] | None = None) -> int:
                 interval_seconds=args.interval,
                 event_log=args.log,
                 snapshot_dir=args.snapshot_dir,
+                snapshot_limit=args.snapshot_limit,
                 probe_hosts=args.probe,
                 dns_names=args.dns,
                 cycles=args.cycles,

@@ -172,3 +172,34 @@ def test_watch_command_passes_snapshot_directory(
 
     assert result == 0
     assert calls[0]["snapshot_dir"] == snapshot_dir
+
+
+def test_watch_command_passes_snapshot_limit(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    calls = []
+
+    def fake_watch_network(**kwargs):
+        calls.append(kwargs)
+        return 1
+
+    monkeypatch.setattr(
+        "network_flight_recorder.cli.watch_network",
+        fake_watch_network,
+    )
+
+    result = main(
+        [
+            "watch",
+            "--cycles",
+            "1",
+            "--snapshot-limit",
+            "25",
+            "--snapshot-dir",
+            str(tmp_path / "snapshots"),
+        ]
+    )
+
+    assert result == 0
+    assert calls[0]["snapshot_limit"] == 25
