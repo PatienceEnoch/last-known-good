@@ -90,3 +90,21 @@ class EventRecorder:
             ]
 
         return events
+
+
+def events_as_timeline(events: list[NetworkEvent]) -> str:
+    """Render recorded events as a chronological incident timeline."""
+    if not events:
+        return "No recorded events."
+
+    lines = ["## Event timeline", ""]
+
+    for event in sorted(events, key=lambda item: item.timestamp):
+        timestamp = event.timestamp.astimezone(UTC).isoformat()
+
+        lines.append(
+            f"- `{timestamp}` **{event.source}** "
+            f"[{event.event_type}] — {event.message}"
+        )
+
+    return "\n".join(lines)
