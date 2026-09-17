@@ -276,3 +276,68 @@ def test_watch_network_writes_incident_report(tmp_path) -> None:
     assert "# Network Incident Report" in content
     assert "Default route disappeared" in content
     assert "Probe to 1.1.1.1 failed" in content
+
+
+def test_watch_network_links_recovery_to_open_incident(tmp_path) -> None:
+    healthy = json.loads(
+        (FIXTURES / "healthy.json").read_text(encoding="utf-8")
+    )
+    broken = json.loads(
+        (FIXTURES / "broken.json").read_text(encoding="utf-8")
+    )
+    recovered = json.loads(json.dumps(healthy))
+    recovered["captured_at"] = "2026-09-13T12:10:00+00:00"
+
+    snapshots = iter(
+        [
+            healthy,
+            broken,
+            recovered,
+        ]
+    )
+
+    def fake_collector(probe_hosts, dns_names):
+        return next(snapshots)
+
+    def fake_sleep(seconds):
+        pass
+
+    snapshot_dir = tmp_path / "snapshots"
+
+    watch_network(
+        interval_seconds=1,
+        event_log=tmp_path / "events.jsonl",
+        snapshot_dir=snapshot_dir,
+        cycles=2,
+        collector=fake_collector,
+        sleeper=fake_sleep,
+    )
+
+    incidents_dir = snapshot_dir / "incidents"
+
+    incident_dirs = sorted(
+        path
+        for path in incidents_dir.iterdir()
+        if path.is_dir()
+    )
+
+    assert [path.name for path in incident_dirs] == [
+        "cycle-0001",
+    ]
+
+    incident_dir = incident_dirs[0]
+
+    recovery = incident_dir / "recovery.json"
+    recovery_report = incident_dir / "recovery.md"
+
+    assert recovery.exists()
+    assert recovery_report.exists()
+
+    assert json.loads(
+        recovery.read_text(encoding="utf-8")
+    ) == recovered
+
+    report = recovery_report.read_text(encoding="utf-8")
+
+    assert "Default route restored" in report
+    assert "Probe to 1.1.1.1 recovered" in report

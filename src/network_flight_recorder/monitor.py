@@ -103,6 +103,7 @@ def watch_network(
         )
 
     completed = 0
+    open_incident_dir: Path | None = None
 
     while cycles is None or completed < cycles:
         sleeper(interval_seconds)
@@ -138,43 +139,77 @@ def watch_network(
         completed += 1
 
         if findings and snapshot_dir is not None:
-            incident_dir = (
-                snapshot_dir
-                / "incidents"
-                / f"cycle-{completed:04d}"
+            is_recovery = all(
+                finding.severity == "info"
+                for finding in findings
             )
 
-            incident_dir.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
+            if is_recovery and open_incident_dir is not None:
+                (
+                    open_incident_dir / "recovery.json"
+                ).write_text(
+                    json.dumps(
+                        current,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                    encoding="utf-8",
+                )
 
-            (incident_dir / "before.json").write_text(
-                json.dumps(
-                    previous,
-                    indent=2,
-                    sort_keys=True,
-                ),
-                encoding="utf-8",
-            )
+                (
+                    open_incident_dir / "recovery.md"
+                ).write_text(
+                    findings_as_markdown(
+                        previous,
+                        current,
+                        findings,
+                    ),
+                    encoding="utf-8",
+                )
 
-            (incident_dir / "after.json").write_text(
-                json.dumps(
-                    current,
-                    indent=2,
-                    sort_keys=True,
-                ),
-                encoding="utf-8",
-            )
+                open_incident_dir = None
 
-            (incident_dir / "report.md").write_text(
-                findings_as_markdown(
-                    previous,
-                    current,
-                    findings,
-                ),
-                encoding="utf-8",
-            )
+            else:
+                incident_dir = (
+                    snapshot_dir
+                    / "incidents"
+                    / f"cycle-{completed:04d}"
+                )
+
+                incident_dir.mkdir(
+                    parents=True,
+                    exist_ok=True,
+                )
+
+                (incident_dir / "before.json").write_text(
+                    json.dumps(
+                        previous,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                    encoding="utf-8",
+                )
+
+                (incident_dir / "after.json").write_text(
+                    json.dumps(
+                        current,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                    encoding="utf-8",
+                )
+
+                (incident_dir / "report.md").write_text(
+                    findings_as_markdown(
+                        previous,
+                        current,
+                        findings,
+                    ),
+                    encoding="utf-8",
+                )
+
+                if not is_recovery:
+                    open_incident_dir = incident_dir
 
         if reporter is not None:
             reporter(
