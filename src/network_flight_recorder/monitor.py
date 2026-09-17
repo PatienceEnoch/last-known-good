@@ -235,6 +235,47 @@ def watch_network(
                     encoding="utf-8",
                 )
 
+                failure_report = (
+                    open_incident_dir / "report.md"
+                ).read_text(
+                    encoding="utf-8"
+                )
+
+                recovery_report = (
+                    open_incident_dir / "recovery.md"
+                ).read_text(
+                    encoding="utf-8"
+                )
+
+                summary = "\n".join(
+                    [
+                        "# Incident Lifecycle Summary",
+                        "",
+                        f"- Started: {status['started_at']}",
+                        f"- Recovered: {status['recovered_at']}",
+                        (
+                            "- Duration: "
+                            f"{status['duration_seconds']} seconds"
+                        ),
+                        "",
+                        "## Failure",
+                        "",
+                        failure_report,
+                        "",
+                        "## Recovery",
+                        "",
+                        recovery_report,
+                        "",
+                    ]
+                )
+
+                (
+                    open_incident_dir / "summary.md"
+                ).write_text(
+                    summary,
+                    encoding="utf-8",
+                )
+
                 open_incident_dir = None
 
             else:

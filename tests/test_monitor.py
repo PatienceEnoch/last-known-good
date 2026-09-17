@@ -508,3 +508,51 @@ def test_watch_network_records_incident_duration(tmp_path) -> None:
     )
 
     assert status["duration_seconds"] == 300
+
+
+def test_watch_network_writes_final_incident_summary(tmp_path) -> None:
+    healthy = json.loads(
+        (FIXTURES / "healthy.json").read_text(encoding="utf-8")
+    )
+    broken = json.loads(
+        (FIXTURES / "broken.json").read_text(encoding="utf-8")
+    )
+    recovered = json.loads(json.dumps(healthy))
+    recovered["captured_at"] = "2026-09-13T12:10:00+00:00"
+
+    snapshots = iter(
+        [
+            healthy,
+            broken,
+            recovered,
+        ]
+    )
+
+    def fake_collector(probe_hosts, dns_names):
+        return next(snapshots)
+
+    watch_network(
+        interval_seconds=1,
+        event_log=tmp_path / "events.jsonl",
+        snapshot_dir=tmp_path / "snapshots",
+        cycles=2,
+        collector=fake_collector,
+        sleeper=lambda seconds: None,
+    )
+
+    summary_path = (
+        tmp_path
+        / "snapshots"
+        / "incidents"
+        / "cycle-0001"
+        / "summary.md"
+    )
+
+    assert summary_path.exists()
+
+    summary = summary_path.read_text(encoding="utf-8")
+
+    assert "# Incident Lifecycle Summary" in summary
+    assert "Duration: 300 seconds" in summary
+    assert "Default route disappeared" in summary
+    assert "Default route restored" in summary
