@@ -25,7 +25,12 @@ from .event_recorder import (
     load_events,
     save_event,
 )
-from .incidents import build_incident_summary, publish_incident_summary
+from .incidents import (
+    build_incident_summary,
+    group_events_into_incidents,
+    incidents_as_markdown,
+    publish_incident_summary,
+)
 from .privacy import redact_snapshot
 from .remediation import (
     generate_remediation_plan,
@@ -300,6 +305,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional file to write the summary to",
     )
 
+    incidents = commands.add_parser(
+        "incidents",
+        help="Group related network events into incidents",
+    )
+
+    incidents.add_argument(
+        "--log",
+        type=Path,
+        default=Path("events/events.jsonl"),
+        help="Path to the JSONL event log",
+    )
+
+    _add_event_filter_arguments(incidents)
+
+    incidents.add_argument(
+        "--output",
+        type=Path,
+        help="Optional file to write the incident report to",
+    )
+
     prune = commands.add_parser(
         "prune",
         help="Plan or apply snapshot retention",
@@ -403,6 +428,28 @@ def main(argv: list[str] | None = None) -> int:
                 report + "\n",
             )
             print(f"Summary written to {args.output}")
+        else:
+            print(report)
+
+        return 0
+
+    if args.command == "incidents":
+        events = _filter_events(
+            load_events(args.log),
+            event_type=args.event_type,
+            source=args.source,
+            since=args.since,
+        )
+
+        incidents = group_events_into_incidents(events)
+        report = incidents_as_markdown(incidents)
+
+        if args.output:
+            _write(
+                args.output,
+                report + "\n",
+            )
+            print(f"Incident report written to {args.output}")
         else:
             print(report)
 

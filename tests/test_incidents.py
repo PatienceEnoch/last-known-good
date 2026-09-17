@@ -1,7 +1,10 @@
 import json
+from datetime import UTC, datetime, timedelta
 
+from network_flight_recorder.event_recorder import NetworkEvent
 from network_flight_recorder.incidents import (
     build_incident_summary,
+    group_events_into_incidents,
     publish_incident_summary,
 )
 
@@ -47,6 +50,65 @@ def test_build_incident_summary():
             "routing",
         ],
     }
+
+
+def test_group_events_into_separate_incidents():
+    base_time = datetime(2026, 9, 17, 12, 0, tzinfo=UTC)
+
+    events = [
+        NetworkEvent(
+            event_type="interface",
+            source="analyzer",
+            message="Interface went down",
+            timestamp=base_time,
+            metadata={"severity": "high"},
+        ),
+        NetworkEvent(
+            event_type="routing",
+            source="analyzer",
+            message="Default route disappeared",
+            timestamp=base_time + timedelta(minutes=1),
+            metadata={"severity": "critical"},
+        ),
+        NetworkEvent(
+            event_type="connectivity",
+            source="analyzer",
+            message="Probe failed",
+            timestamp=base_time + timedelta(minutes=3),
+            metadata={"severity": "high"},
+        ),
+        NetworkEvent(
+            event_type="dns",
+            source="analyzer",
+            message="DNS failed later",
+            timestamp=base_time + timedelta(minutes=20),
+            metadata={"severity": "medium"},
+        ),
+    ]
+
+    incidents = group_events_into_incidents(events)
+
+    assert len(incidents) == 2
+
+    first = incidents[0]
+
+    assert first.started_at == base_time
+    assert first.ended_at == base_time + timedelta(minutes=3)
+    assert len(first.events) == 3
+    assert first.severity == "critical"
+    assert first.categories == (
+        "connectivity",
+        "interface",
+        "routing",
+    )
+
+    second = incidents[1]
+
+    assert second.started_at == base_time + timedelta(minutes=20)
+    assert second.ended_at == base_time + timedelta(minutes=20)
+    assert len(second.events) == 1
+    assert second.severity == "medium"
+    assert second.categories == ("dns",)
 
 
 def test_publish_incident_summary_calls_aws(monkeypatch):
