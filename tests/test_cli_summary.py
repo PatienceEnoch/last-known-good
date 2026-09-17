@@ -61,3 +61,91 @@ def test_summary_reports_event_log_statistics(tmp_path, capsys) -> None:
     assert "connectivity: 1" in output
     assert "2026-09-17T12:00:00+00:00" in output
     assert "2026-09-17T12:05:00+00:00" in output
+
+
+def test_summary_filters_by_event_type(tmp_path, capsys) -> None:
+    path = tmp_path / "events.jsonl"
+    base_time = datetime.now(UTC)
+
+    save_event(
+        path,
+        NetworkEvent(
+            event_type="dns",
+            source="analyzer",
+            message="DNS failure",
+            timestamp=base_time,
+            metadata={"severity": "critical"},
+        ),
+    )
+
+    save_event(
+        path,
+        NetworkEvent(
+            event_type="routing",
+            source="analyzer",
+            message="Routing failure",
+            timestamp=base_time,
+            metadata={"severity": "high"},
+        ),
+    )
+
+    result = main(
+        [
+            "summary",
+            "--log",
+            str(path),
+            "--type",
+            "dns",
+        ]
+    )
+
+    output = capsys.readouterr().out
+
+    assert result == 0
+    assert "Total events: 1" in output
+    assert "dns: 1" in output
+    assert "routing: 1" not in output
+
+
+def test_summary_filters_by_since(tmp_path, capsys) -> None:
+    path = tmp_path / "events.jsonl"
+    now = datetime.now(UTC)
+
+    save_event(
+        path,
+        NetworkEvent(
+            event_type="dns",
+            source="analyzer",
+            message="Recent failure",
+            timestamp=now - timedelta(minutes=20),
+            metadata={"severity": "critical"},
+        ),
+    )
+
+    save_event(
+        path,
+        NetworkEvent(
+            event_type="routing",
+            source="analyzer",
+            message="Old failure",
+            timestamp=now - timedelta(hours=3),
+            metadata={"severity": "high"},
+        ),
+    )
+
+    result = main(
+        [
+            "summary",
+            "--log",
+            str(path),
+            "--since",
+            "1h",
+        ]
+    )
+
+    output = capsys.readouterr().out
+
+    assert result == 0
+    assert "Total events: 1" in output
+    assert "dns: 1" in output
+    assert "routing: 1" not in output

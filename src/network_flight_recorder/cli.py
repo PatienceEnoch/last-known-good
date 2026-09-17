@@ -80,6 +80,42 @@ def _parse_since(value: str) -> timedelta:
     )
 
 
+def _filter_events(
+    events: list[NetworkEvent],
+    *,
+    event_type: str | None = None,
+    source: str | None = None,
+    since: timedelta | None = None,
+) -> list[NetworkEvent]:
+    """Return events matching the requested CLI filters."""
+    filtered = events
+
+    if event_type:
+        filtered = [
+            event
+            for event in filtered
+            if event.event_type == event_type
+        ]
+
+    if source:
+        filtered = [
+            event
+            for event in filtered
+            if event.source == source
+        ]
+
+    if since:
+        cutoff = datetime.now(UTC) - since
+
+        filtered = [
+            event
+            for event in filtered
+            if event.timestamp >= cutoff
+        ]
+
+    return filtered
+
+
 def _event_summary_as_markdown(events: list[NetworkEvent]) -> str:
     """Render a concise summary of recorded network events."""
     lines = ["# Event Summary", ""]
@@ -119,6 +155,26 @@ def _event_summary_as_markdown(events: list[NetworkEvent]) -> str:
         lines.append(f"- {category}: {count}")
 
     return "\n".join(lines)
+
+
+def _add_event_filter_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--type",
+        dest="event_type",
+        help="Show only events of this type",
+    )
+
+    parser.add_argument(
+        "--source",
+        help="Show only events from this source",
+    )
+
+    parser.add_argument(
+        "--since",
+        type=_parse_since,
+        metavar="DURATION",
+        help="Show events from a recent duration such as 30m, 1h, or 2d",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -216,23 +272,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to the JSONL event log",
     )
 
-    timeline.add_argument(
-        "--type",
-        dest="event_type",
-        help="Show only events of this type",
-    )
-
-    timeline.add_argument(
-        "--source",
-        help="Show only events from this source",
-    )
-
-    timeline.add_argument(
-        "--since",
-        type=_parse_since,
-        metavar="DURATION",
-        help="Show events from a recent duration such as 30m, 1h, or 2d",
-    )
+    _add_event_filter_arguments(timeline)
 
     timeline.add_argument(
         "--output",
@@ -251,6 +291,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("events/events.jsonl"),
         help="Path to the JSONL event log",
     )
+
+    _add_event_filter_arguments(summary)
 
     summary.add_argument(
         "--output",
@@ -325,30 +367,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "timeline":
-        events = load_events(args.log)
-
-        if args.event_type:
-            events = [
-                event
-                for event in events
-                if event.event_type == args.event_type
-            ]
-
-        if args.source:
-            events = [
-                event
-                for event in events
-                if event.source == args.source
-            ]
-
-        if args.since:
-            cutoff = datetime.now(UTC) - args.since
-
-            events = [
-                event
-                for event in events
-                if event.timestamp >= cutoff
-            ]
+        events = _filter_events(
+            load_events(args.log),
+            event_type=args.event_type,
+            source=args.source,
+            since=args.since,
+        )
 
         report = events_as_timeline(events)
 
@@ -364,7 +388,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "summary":
-        events = load_events(args.log)
+        events = _filter_events(
+            load_events(args.log),
+            event_type=args.event_type,
+            source=args.source,
+            since=args.since,
+        )
+
         report = _event_summary_as_markdown(events)
 
         if args.output:
