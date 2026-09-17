@@ -16,7 +16,12 @@ from .analyzer import (
 )
 from .cloudwatch import publish_snapshot_metrics
 from .collector import collect_snapshot
-from .event_recorder import findings_to_events, save_event
+from .event_recorder import (
+    events_as_timeline,
+    findings_to_events,
+    load_events,
+    save_event,
+)
 from .incidents import build_incident_summary, publish_incident_summary
 from .privacy import redact_snapshot
 from .remediation import (
@@ -119,6 +124,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Generate an approval-required remediation plan",
     )
 
+    timeline = commands.add_parser(
+        "timeline",
+        help="Show recorded network events in chronological order",
+    )
+
+    timeline.add_argument(
+        "--log",
+        type=Path,
+        default=Path("events/events.jsonl"),
+        help="Path to the JSONL event log",
+    )
+
+    timeline.add_argument(
+        "--output",
+        type=Path,
+        help="Optional file to write the timeline to",
+    )
+
     prune = commands.add_parser(
         "prune",
         help="Plan or apply snapshot retention",
@@ -183,6 +206,21 @@ def main(argv: list[str] | None = None) -> int:
             print("CloudWatch metrics published")
 
         print(f"Snapshot written to {args.output}")
+        return 0
+
+    if args.command == "timeline":
+        events = load_events(args.log)
+        report = events_as_timeline(events)
+
+        if args.output:
+            _write(
+                args.output,
+                report + "\n",
+            )
+            print(f"Timeline written to {args.output}")
+        else:
+            print(report)
+
         return 0
 
     if args.command == "prune":
