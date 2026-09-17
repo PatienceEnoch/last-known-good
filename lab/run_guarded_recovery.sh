@@ -87,6 +87,7 @@ import json
 from pathlib import Path
 
 from network_flight_recorder.lab_remediation import (
+    build_remediation_report,
     verify_lab_remediation,
 )
 
@@ -112,6 +113,27 @@ if not verified:
     raise RuntimeError("Remediation verification FAILED")
 
 print("Recovery verification: PASSED")
+
+failed = json.loads(
+    Path("snapshots/remediation-failed.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+report = build_remediation_report(
+    action_id="renew_network_configuration",
+    baseline=baseline,
+    before=failed,
+    after=recovered,
+    verified=verified,
+)
+
+Path("reports/remediation.md").write_text(
+    report,
+    encoding="utf-8",
+)
+
+print("Remediation report: reports/remediation.md")
 PY
 
 echo "Guarded recovery demonstration completed successfully."

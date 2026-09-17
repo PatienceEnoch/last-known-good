@@ -33,9 +33,9 @@
 - [x] Generate approval-required remediation plans
 - [x] Restrict remediation actions to an explicit allowlist
 - [x] Add remediation safety guardrails
-- [ ] Execute an approved remediation in an isolated lab
-- [ ] Automatically verify whether remediation restored service
-- [ ] Generate a remediation before-and-after report
+- [x] Execute an approved remediation in an isolated lab
+- [x] Automatically verify whether remediation restored service
+- [x] Generate a remediation before-and-after report
 - [ ] Demonstrate rollback when recovery verification fails
 
 ## Phase 5 — Continuous Monitoring

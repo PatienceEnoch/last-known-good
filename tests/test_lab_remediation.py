@@ -104,3 +104,35 @@ def test_verify_lab_remediation_detects_restored_network() -> None:
         )
         is False
     )
+
+
+def test_build_remediation_report_includes_before_and_after_state() -> None:
+    from network_flight_recorder.lab_remediation import (
+        build_remediation_report,
+    )
+
+    baseline = json.loads(
+        (FIXTURES / "healthy.json").read_text(encoding="utf-8")
+    )
+    failed = json.loads(
+        (FIXTURES / "broken.json").read_text(encoding="utf-8")
+    )
+    recovered = json.loads(
+        (FIXTURES / "healthy.json").read_text(encoding="utf-8")
+    )
+
+    report = build_remediation_report(
+        action_id="renew_network_configuration",
+        baseline=baseline,
+        before=failed,
+        after=recovered,
+        verified=True,
+    )
+
+    assert "# Remediation Report" in report
+    assert "renew_network_configuration" in report
+    assert "Verification: PASSED" in report
+    assert "Before remediation" in report
+    assert "After remediation" in report
+    assert "Default route: missing" in report
+    assert "Default route: 10.10.10.1 via eth0" in report

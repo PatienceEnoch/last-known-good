@@ -102,3 +102,51 @@ def verify_lab_remediation(
         and current_route.get("dev")
         == expected_route.get("dev")
     )
+
+
+
+def _describe_default_route(snapshot: Snapshot) -> str:
+    """Return a readable description of the snapshot's default route."""
+    route = _default_route(snapshot)
+
+    if route is None:
+        return "missing"
+
+    gateway = route.get("gateway", "unknown")
+    interface = route.get("dev", "unknown")
+
+    return f"{gateway} via {interface}"
+
+
+def build_remediation_report(
+    *,
+    action_id: str,
+    baseline: Snapshot,
+    before: Snapshot,
+    after: Snapshot,
+    verified: bool,
+) -> str:
+    """Build a Markdown before-and-after remediation report."""
+    verification = "PASSED" if verified else "FAILED"
+
+    return "\n".join(
+        [
+            "# Remediation Report",
+            "",
+            f"- Action: `{action_id}`",
+            f"- Verification: {verification}",
+            "",
+            "## Before remediation",
+            "",
+            f"- Default route: {_describe_default_route(before)}",
+            "",
+            "## Known-good state",
+            "",
+            f"- Default route: {_describe_default_route(baseline)}",
+            "",
+            "## After remediation",
+            "",
+            f"- Default route: {_describe_default_route(after)}",
+            "",
+        ]
+    )
