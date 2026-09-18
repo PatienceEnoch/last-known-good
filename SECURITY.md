@@ -1,42 +1,39 @@
 # Security and responsible use
 
-Network Flight Recorder is a defensive administration and observability project.
+Network Flight Recorder is a defensive administration and observability project. Its collection and recovery features are intentionally narrow.
 
 ## Operating boundaries
 
-- Run it only on systems and networks you own or are explicitly authorized to administer.
-- The collector performs no port scan, exploitation, credential collection, or packet capture.
-- Review snapshots before sharing them; hostnames, internal addresses, routes, and service names
-  can reveal sensitive infrastructure details.
-- Never commit real production snapshots, credentials, private keys, tokens, or customer data.
+- Run NFR only on systems and networks you own or are explicitly authorized to administer.
+- The collector does not perform port scanning, exploitation, credential collection, or packet capture.
+- Review snapshots before sharing them. Hostnames, internal addresses, routes, and service names can expose infrastructure details.
+- Never commit production snapshots, credentials, private keys, tokens, or customer data.
 - Use deterministic redaction before sharing or uploading diagnostic evidence.
 - Retention cleanup is a dry run unless `--apply` is explicitly supplied.
 
-## Current remediation safety model
+## Remediation safety model
 
-Network Flight Recorder can generate remediation plans, but a plan does not execute by itself.
+A remediation plan never executes by itself.
 
-- Every plan is marked as requiring approval.
+- Every plan requires approval.
 - Execution requires an explicit `approved=True` decision.
-- Action IDs must pass a fixed allowlist before an executor is called.
+- The requested action ID must pass a fixed allowlist before an executor is called.
 - The included executor supports only `renew_network_configuration` in the isolated Docker lab.
-- The lab builds one exact `ip route replace default` command from a known-good snapshot; it does
-  not accept an arbitrary shell command.
+- The lab builds one exact `ip route replace default` command from a known-good snapshot; it does not accept arbitrary shell commands.
 - A post-change snapshot verifies that the expected gateway and interface were restored.
-- A remediation report preserves the before, known-good, and after states.
+- The remediation report preserves the before, known-good, and after states.
+- If post-remediation verification fails, the isolated lab can execute a rollback path that restores the pre-remediation route state.
 
-Generic remediation of production hosts is not implemented. Automatic rollback after failed
-verification is also not implemented and remains a roadmap item.
+Generic production remediation is not implemented. The rollback path is part of the controlled lab workflow, not a general-purpose production recovery engine.
 
 ## Docker lab boundary
 
-The demonstration lab grants `NET_ADMIN` only to its isolated container so it can remove the
-container's default route and, in the guarded-recovery demonstration, restore it. It does not use
-host networking. A cleanup trap restarts the container if a demonstration exits early. Review
-`compose.yaml`, `lab/run_demo.sh`, `lab/run_guarded_recovery.sh`, and `docs/docker-lab.md` before
-running failure injection.
+The lab grants `NET_ADMIN` only to its isolated recorder container. It does not use host networking.
+
+Failure-injection scripts may remove the container's default route, exercise guarded restoration, or intentionally force a failed verification to test rollback. Cleanup logic restores the disposable environment if a demonstration exits early.
+
+Review `compose.yaml`, the scripts under `lab/`, and [docs/docker-lab.md](docs/docker-lab.md) before running failure injection.
 
 ## Reporting concerns
 
-Report security concerns privately to the repository owner rather than opening a public issue
-containing sensitive details.
+Report security concerns privately to the repository owner rather than opening a public issue that contains sensitive infrastructure details.
