@@ -282,6 +282,20 @@ Watch mode detects failure and recovery transitions, maintains incident state,
 protects incident evidence from rolling snapshot cleanup, and writes a final
 lifecycle summary after recovery.
 
+### Live incident lifecycle
+
+The watch demonstration captures an outage, identifies the likely routing failure,
+detects recovery, closes the incident, and records the total outage duration.
+
+![NFR watch-mode incident lifecycle summary](docs/assets/watch-lifecycle-summary.png)
+
+### Multiple sequential incidents
+
+A continuous watch session was also validated across two separate outages. Each
+incident was independently opened, recovered, and closed.
+
+![NFR multiple sequential incidents](docs/assets/watch-multiple-incidents.png)
+
 See the [CLI reference](docs/cli-reference.md) for all commands.
 
 ---

@@ -78,7 +78,7 @@
 
 - [x] Update README with continuous monitoring and incident lifecycle workflow
 - [x] Update architecture documentation
-- [ ] Add final watch-mode demonstration screenshots
+- [x] Add final watch-mode demonstration screenshots
 - [x] Document the current CLI commands and examples
 - [x] Document safety boundaries and limitations
 - [x] Update the validated demonstration records
