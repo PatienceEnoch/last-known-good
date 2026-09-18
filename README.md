@@ -459,8 +459,8 @@ Completed:
 - Outage duration calculation
 - Final failure-to-recovery summaries
 
-Remaining validation includes a live watch-mode Docker demonstration and
-multiple sequential live incidents.
+Remaining validation includes multiple sequential live incidents in one
+long-running watch session.
 
 See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 

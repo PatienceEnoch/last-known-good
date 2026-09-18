@@ -87,8 +87,10 @@ nfr prune \
 ```bash
 ./lab/run_demo.sh
 ./lab/run_guarded_recovery.sh
+./lab/run_rollback_demo.sh
+./lab/run_watch_recovery_demo.sh
 ```
 
-Both demonstrations change network state only inside the disposable recorder
+All demonstrations change network state only inside the disposable recorder
 container. See [Docker lab safety boundaries](docker-lab.md) before running
 them.

@@ -60,12 +60,12 @@
 - [x] Record incident start and recovery timestamps
 - [x] Calculate outage duration
 - [x] Generate a final failure-to-recovery lifecycle summary
-- [ ] Run a complete live failure → recovery watch demonstration
+- [x] Run a complete live failure → recovery watch demonstration
 - [ ] Validate multiple sequential incidents in one long-running watch session
 
 ## Phase 7 — Final Integration and Validation
 
-- [ ] Run an end-to-end monitored outage in the Docker lab
+- [x] Run an end-to-end monitored outage in the Docker lab
 - [x] Validate failure detection, evidence capture, and recovery in automated tests
 - [x] Validate snapshot rotation while protected incident evidence remains intact
 - [x] Validate restart recovery during an active incident

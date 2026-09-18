@@ -356,7 +356,6 @@ Implemented:
 
 Still being validated or expanded:
 
-- Complete end-to-end monitored failure-to-recovery demonstration
 - Multiple sequential incidents in one long-running watch session
 - Final portfolio-release documentation and validation
 

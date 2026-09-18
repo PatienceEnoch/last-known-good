@@ -6,7 +6,7 @@ requires a live demonstration.
 ## Validation date and revision
 
 - Date: September 18, 2026 (UTC)
-- Revision reviewed: `c86cae4`
+- Revision reviewed: `8329216`
 - Environment for local Python checks: clean repository checkout, Python 3.12
 
 ## Automated application validation
@@ -20,7 +20,7 @@ ruff check .
 
 Results:
 
-- 67 tests passed
+- 69 tests passed
 - Ruff completed with zero findings
 
 The automated suite covers snapshot analysis, diagnosis, privacy controls,
@@ -48,8 +48,8 @@ lab execution → post-change snapshot → verification → report
 
 ## GitHub Actions validation
 
-The `CI and Security` workflow for revision `c86cae4` completed successfully in
-[run 35329924856](https://github.com/PatienceEnoch/network-flight-recorder/actions/runs/35329924856).
+The `CI and Security` workflow for revision `8329216` completed successfully in
+[run 35376936422](https://github.com/PatienceEnoch/network-flight-recorder/actions/runs/35376936422).
 
 All three jobs passed:
 
@@ -61,9 +61,7 @@ All three jobs passed:
 
 The following items are intentionally not claimed as complete:
 
-- A live Docker demonstration of the complete `nfr watch` failure-to-recovery lifecycle
 - Multiple sequential live incidents in one long-running watch session
-- Rollback behavior when remediation verification fails
 - Final watch-mode screenshots and a portfolio release tag
 
 The earlier 11-test milestone remains available in the
