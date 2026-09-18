@@ -2,37 +2,15 @@
 
 > **A black box for your network.**
 
-When a network goes down, knowing that something broke is only the beginning.
+Network outages are easy to notice and harder to reconstruct. By the time troubleshooting starts, the route, resolver state, interface condition, or latency change that mattered may already be gone.
 
-The more useful question is:
+Network Flight Recorder (NFR) is a local-first Linux troubleshooting and observability tool built to preserve that evidence. It records a known-good state, detects meaningful changes, correlates related symptoms, tracks incidents through recovery, and produces evidence-backed reports.
 
-**What changed right before it broke?**
-
-Network Flight Recorder is an explainable, local-first Linux network troubleshooting tool that captures a known-good network state, detects meaningful changes during an outage, correlates related symptoms, and produces an evidence-backed incident report.
-
-Instead of giving an operator a collection of unrelated alerts, the goal is to reconstruct the story of the incident:
-
-**Healthy state → Change → Failure → Evidence → Likely cause**
+**Healthy state → change → failure → evidence → diagnosis → recovery**
 
 [![CI and Security](https://github.com/PatienceEnoch/network-flight-recorder/actions/workflows/test.yml/badge.svg)](https://github.com/PatienceEnoch/network-flight-recorder/actions/workflows/test.yml)
 
----
-
-## Why this exists
-
-Traditional monitoring is good at telling an operator:
-
-> Something is down.
-
-But troubleshooting usually begins with a harder question:
-
-> What changed immediately before the failure?
-
-Network Flight Recorder is designed to help answer that question.
-
-It records important parts of a healthy Linux network state, compares them with a later snapshot, identifies meaningful differences, and correlates related symptoms into a likely root cause.
-
-The project brings together network troubleshooting, Linux administration, observability, incident response, security, cloud infrastructure, and automation.
+Core diagnosis stays local. AWS adds durable storage and operational visibility, but NFR does not depend on cloud connectivity to investigate an outage that may have broken that connectivity in the first place.
 
 ---
 
@@ -286,21 +264,7 @@ This keeps the AWS environment reproducible and managed as code.
 
 ## Monitoring and incident workflow
 
-The project has grown beyond one-time snapshot comparison.
-
-It now includes functionality for:
-
-- Network monitoring
-- Incident tracking
-- Event timelines
-- Incident summaries
-- Watch behavior
-- CloudWatch integration
-- Evidence recording
-- Privacy controls
-- Guarded remediation planning
-
-The goal is to move from simply detecting a failure toward reconstructing the complete sequence of events surrounding it.
+Watch mode turns one-time snapshot comparison into an incident timeline. It can detect failure and recovery transitions, maintain incident state, preserve evidence, recover an open incident after restart, and write a final lifecycle summary.
 
 Start a bounded watch session with preserved snapshot history:
 
@@ -516,29 +480,18 @@ See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 
 ---
 
-## What this project demonstrates
+## Design constraints
 
-Network Flight Recorder is more than a Python application.
+A few rules keep NFR from becoming an unsafe "self-healing network" demo:
 
-It is a hands-on project exploring how networking, cloud engineering, security, automation, and incident response work together.
+1. **Diagnosis must survive the outage.** Core analysis stays local.
+2. **Evidence comes before action.** Findings and remediation decisions are tied to observable state.
+3. **A diagnosis must be inspectable.** Correlation should show why it reached a conclusion.
+4. **Sensitive evidence is protected before central storage.**
+5. **Remediation stays narrow, approved, and verifiable.**
+6. **Failure testing stays isolated.** The Docker lab changes container networking, not the host.
 
-The project demonstrates:
-
-- Systematic network troubleshooting
-- Linux administration
-- Root-cause analysis
-- Network observability
-- Secure handling of diagnostic evidence
-- Infrastructure as code
-- AWS operations
-- Automated testing
-- Continuous integration
-- Safe failure injection
-- Human-controlled remediation
-
-At the center of the project is one question:
-
-> **What changed?**
+The project is meant to make troubleshooting clearer without giving automation unrestricted authority over the network.
 
 ---
 
