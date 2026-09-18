@@ -11,3 +11,4 @@ services:
     volumes:
       - ./snapshots:/app/snapshots
       - ./reports:/app/reports
+      - ./events:/app/events
