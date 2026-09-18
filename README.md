@@ -340,8 +340,9 @@ The recovery layer therefore uses:
 - Before-and-after remediation reports
 
 Execution is currently limited to the isolated Docker lab and one tightly
-scoped route-restoration action. Generic or production remediation is not
-implemented. Rollback after failed verification remains a roadmap item.
+scoped route-restoration action. The lab also demonstrates automatic rollback
+when post-remediation verification fails. Generic or production remediation
+is not implemented.
 
 ---
 
@@ -438,6 +439,7 @@ Completed:
 - Approved recovery execution in the isolated Docker lab
 - Automatic recovery verification
 - Before-and-after remediation reporting
+- Rollback after failed recovery verification in the isolated Docker lab
 
 ### Phase 5 — Continuous Monitoring
 
@@ -457,9 +459,8 @@ Completed:
 - Outage duration calculation
 - Final failure-to-recovery summaries
 
-Remaining validation includes a live watch-mode Docker demonstration,
-multiple sequential live incidents, and rollback behavior when verification
-fails.
+Remaining validation includes a live watch-mode Docker demonstration and
+multiple sequential live incidents.
 
 See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 

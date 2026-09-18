@@ -231,7 +231,7 @@ Verify
 
 This is deliberately different from automatically modifying a network immediately after detecting a symptom.
 
-Rollback validation remains a roadmap item for cases where a remediation action does not restore the expected state.
+When post-remediation verification fails, the isolated lab can execute a rollback path that restores the pre-remediation state.
 
 ---
 
@@ -348,6 +348,7 @@ Implemented:
 - Recovery execution in the isolated lab
 - Automatic recovery verification
 - Before-and-after remediation reports
+- Rollback execution after failed recovery verification
 - Continuous watch mode
 - Incident lifecycle tracking
 - Failure and recovery detection
@@ -355,7 +356,6 @@ Implemented:
 
 Still being validated or expanded:
 
-- Rollback behavior when recovery verification fails
 - Complete end-to-end monitored failure-to-recovery demonstration
 - Multiple sequential incidents in one long-running watch session
 - Final portfolio-release documentation and validation

@@ -36,7 +36,7 @@
 - [x] Execute an approved remediation in an isolated lab
 - [x] Automatically verify whether remediation restored service
 - [x] Generate a remediation before-and-after report
-- [ ] Demonstrate rollback when recovery verification fails
+- [x] Demonstrate rollback when recovery verification fails
 
 ## Phase 5 — Continuous Monitoring
 
@@ -69,7 +69,7 @@
 - [x] Validate failure detection, evidence capture, and recovery in automated tests
 - [x] Validate snapshot rotation while protected incident evidence remains intact
 - [x] Validate restart recovery during an active incident
-- [x] Run the complete automated test suite (67 passed)
+- [x] Run the complete automated test suite (69 passed)
 - [x] Run Ruff with zero findings
 - [x] Validate Terraform formatting and configuration in CI
 - [x] Verify GitHub Actions CI passes across Python, security, and Terraform jobs
