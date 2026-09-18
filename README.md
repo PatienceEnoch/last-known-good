@@ -162,7 +162,20 @@ The failure occurs only inside the disposable container.
 
 ![Completed incident report and returned terminal prompt](docs/assets/docker-demo-report-2.jpeg)
 
-See the [full validation record](docs/validated-demo.md).
+This initial diagnostic demonstration is preserved as a
+[historical validation record](docs/validated-demo.md). The
+[current validation record](docs/validation-status.md) covers the expanded
+test suite, guarded recovery, and CI checks.
+
+For the approval-gated recovery demonstration, run:
+
+```bash
+./lab/run_guarded_recovery.sh
+```
+
+That workflow restores the known-good default route inside the container,
+verifies the result, and writes `reports/remediation.md` with before-and-after
+evidence.
 
 ---
 
@@ -289,6 +302,24 @@ It now includes functionality for:
 
 The goal is to move from simply detecting a failure toward reconstructing the complete sequence of events surrounding it.
 
+Start a bounded watch session with preserved snapshot history:
+
+```bash
+nfr watch \
+  --interval 30 \
+  --cycles 10 \
+  --probe 1.1.1.1 \
+  --dns example.com \
+  --snapshot-dir snapshots/watch \
+  --snapshot-limit 100
+```
+
+Watch mode detects failure and recovery transitions, maintains incident state,
+protects incident evidence from rolling snapshot cleanup, and writes a final
+lifecycle summary after recovery.
+
+See the [CLI reference](docs/cli-reference.md) for all commands.
+
 ---
 
 ## Guarded recovery
@@ -305,8 +336,12 @@ The recovery layer therefore uses:
 - Approval-required remediation plans
 - Human review before changes
 - Guardrails around supported actions
+- Automatic post-change verification
+- Before-and-after remediation reports
 
-Automatic recovery verification and rollback are the next major milestones.
+Execution is currently limited to the isolated Docker lab and one tightly
+scoped route-restoration action. Generic or production remediation is not
+implemented. Rollback after failed verification remains a roadmap item.
 
 ---
 
@@ -400,12 +435,31 @@ Completed:
 - Approval-required remediation plans
 - Explicit action allowlist
 - Safety guardrails
+- Approved recovery execution in the isolated Docker lab
+- Automatic recovery verification
+- Before-and-after remediation reporting
 
-In progress:
+### Phase 5 — Continuous Monitoring
 
-- Verify recovery automatically
-- Produce before-and-after recovery reports
-- Demonstrate rollback when verification fails
+Completed:
+
+- Bounded or continuous `nfr watch` monitoring
+- Failure and recovery transition detection
+- Rolling snapshot retention
+- Protected incident evidence
+
+### Phase 6 — Incident Lifecycle
+
+Completed:
+
+- Open and closed incident tracking
+- Restart recovery for persisted open incidents
+- Outage duration calculation
+- Final failure-to-recovery summaries
+
+Remaining validation includes a live watch-mode Docker demonstration,
+multiple sequential live incidents, and rollback behavior when verification
+fails.
 
 See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 

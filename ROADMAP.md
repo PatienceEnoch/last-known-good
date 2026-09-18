@@ -66,21 +66,21 @@
 ## Phase 7 — Final Integration and Validation
 
 - [ ] Run an end-to-end monitored outage in the Docker lab
-- [ ] Validate failure detection, evidence capture, and recovery as one workflow
-- [ ] Validate snapshot rotation while protected incident evidence remains intact
-- [ ] Validate restart recovery during an active incident
-- [ ] Run the complete automated test suite
-- [ ] Run Ruff with zero findings
-- [ ] Validate Terraform formatting and configuration
-- [ ] Verify GitHub Actions CI passes on the final implementation
+- [x] Validate failure detection, evidence capture, and recovery in automated tests
+- [x] Validate snapshot rotation while protected incident evidence remains intact
+- [x] Validate restart recovery during an active incident
+- [x] Run the complete automated test suite (67 passed)
+- [x] Run Ruff with zero findings
+- [x] Validate Terraform formatting and configuration in CI
+- [x] Verify GitHub Actions CI passes across Python, security, and Terraform jobs
 
 ## Phase 8 — Documentation and Portfolio Release
 
-- [ ] Update README with continuous monitoring and incident lifecycle workflow
-- [ ] Update architecture documentation
+- [x] Update README with continuous monitoring and incident lifecycle workflow
+- [x] Update architecture documentation
 - [ ] Add final watch-mode demonstration screenshots
-- [ ] Document the final CLI commands and examples
-- [ ] Document safety boundaries and limitations
-- [ ] Update the validated demonstration record
-- [ ] Review repository for stale documentation
+- [x] Document the current CLI commands and examples
+- [x] Document safety boundaries and limitations
+- [x] Update the validated demonstration records
+- [x] Review repository for stale documentation
 - [ ] Tag a portfolio-ready release

@@ -1,4 +1,12 @@
-# Validated Docker outage demonstration
+# Historical validation — initial Docker outage diagnosis
+
+This record captures the first successful Phase 2 Docker validation. It is
+intentionally preserved as a dated project milestone; the test count and scope
+below describe the repository as it existed on September 14, 2026, not the
+current implementation.
+
+For current automated, guarded-recovery, and CI results, see
+[Current validation status](validation-status.md).
 
 ## Environment
 
@@ -34,11 +42,12 @@ Network Flight Recorder produced two findings:
 It correlated the findings into **Default gateway or routing failure — HIGH confidence** and
 recommended verifying the gateway, route table, and DHCP lease before testing the upstream path.
 
-## Result
+## Historical result
 
-The demonstration completed successfully and returned control to the terminal. This validates
-the complete Phase 2 path from failure injection through evidence collection, comparison,
-correlation, reporting, and cleanup.
+The demonstration completed successfully and returned control to the terminal. At that point in
+the project, it validated the Phase 2 path from failure injection through evidence collection,
+comparison, correlation, reporting, and cleanup. It did not validate the later watch-mode,
+incident-lifecycle, or guarded-recovery features.
 
 ![Outage injection and initial diagnosis](assets/docker-demo-report-1.jpeg)
 
