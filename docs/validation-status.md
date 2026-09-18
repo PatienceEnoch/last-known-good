@@ -6,7 +6,7 @@ requires a live demonstration.
 ## Validation date and revision
 
 - Date: September 18, 2026 (UTC)
-- Revision reviewed: `8329216`
+- Revision reviewed: `2977d32`
 - Environment for local Python checks: clean repository checkout, Python 3.12
 
 ## Automated application validation
@@ -48,8 +48,8 @@ lab execution → post-change snapshot → verification → report
 
 ## GitHub Actions validation
 
-The `CI and Security` workflow for revision `8329216` completed successfully in
-[run 35376936422](https://github.com/PatienceEnoch/network-flight-recorder/actions/runs/35376936422).
+The `CI and Security` workflow for revision `2977d32` completed successfully in
+[run 35379576163](https://github.com/PatienceEnoch/network-flight-recorder/actions/runs/35379576163).
 
 All three jobs passed:
 
@@ -57,12 +57,22 @@ All three jobs passed:
 - Python dependency security audit
 - Terraform formatting, initialization, and validation
 
+## Multiple-incident watch validation
+
+A single continuous watch session successfully handled two separate routing outages.
+
+Each incident was independently opened, recovered, closed, and written to its own lifecycle summary.
+
+Run the demonstration with:
+
+`./lab/run_multi_incident_demo.sh`
+
 ## Validation still outstanding
 
-The following items are intentionally not claimed as complete:
+The remaining portfolio-release items are:
 
-- Multiple sequential live incidents in one long-running watch session
-- Final watch-mode screenshots and a portfolio release tag
+- Final watch-mode screenshots
+- Portfolio release tag
 
 The earlier 11-test milestone remains available in the
 [historical Phase 2 validation record](validated-demo.md).

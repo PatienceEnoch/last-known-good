@@ -459,8 +459,9 @@ Completed:
 - Outage duration calculation
 - Final failure-to-recovery summaries
 
-Remaining validation includes multiple sequential live incidents in one
-long-running watch session.
+Multiple sequential incidents have also been validated in one continuous
+watch session, with each outage independently opened, recovered, closed, and
+summarized.
 
 See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 

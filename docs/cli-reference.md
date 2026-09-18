@@ -89,6 +89,7 @@ nfr prune \
 ./lab/run_guarded_recovery.sh
 ./lab/run_rollback_demo.sh
 ./lab/run_watch_recovery_demo.sh
+./lab/run_multi_incident_demo.sh
 ```
 
 All demonstrations change network state only inside the disposable recorder

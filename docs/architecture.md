@@ -353,10 +353,10 @@ Implemented:
 - Incident lifecycle tracking
 - Failure and recovery detection
 - Persistent open-incident recovery after restart
+- Multiple sequential incidents in one long-running watch session
 
 Still being validated or expanded:
 
-- Multiple sequential incidents in one long-running watch session
 - Final portfolio-release documentation and validation
 
 ---
