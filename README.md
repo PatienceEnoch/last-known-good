@@ -136,9 +136,9 @@ The demonstration:
 
 The failure occurs only inside the disposable container.
 
-![Network Flight Recorder capturing and diagnosing the container outage](docs/assets/docker-demo-report-1.jpeg)
+![Network Flight Recorder capturing and diagnosing the container outage](docs/assets/docker-demo-report-1.png)
 
-![Completed incident report and returned terminal prompt](docs/assets/docker-demo-report-2.jpeg)
+![Completed incident report and returned terminal prompt](docs/assets/docker-demo-report-2.png)
 
 This initial diagnostic demonstration is preserved as a
 [historical validation record](docs/validated-demo.md). The
