@@ -23,3 +23,9 @@ crash.log
 crash.*.log
 
 events/
+
+# Generated watch-demo evidence
+snapshots/**
+!snapshots/.gitkeep
+reports/*.jsonl
+reports/*.txt
