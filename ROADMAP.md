@@ -61,7 +61,7 @@
 - [x] Calculate outage duration
 - [x] Generate a final failure-to-recovery lifecycle summary
 - [x] Run a complete live failure → recovery watch demonstration
-- [ ] Validate multiple sequential incidents in one long-running watch session
+- [x] Validate multiple sequential incidents in one long-running watch session
 
 ## Phase 7 — Final Integration and Validation
 
