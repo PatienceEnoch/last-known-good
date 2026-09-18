@@ -136,3 +136,65 @@ def test_build_remediation_report_includes_before_and_after_state() -> None:
     assert "After remediation" in report
     assert "Default route: missing" in report
     assert "Default route: 10.10.10.1 via eth0" in report
+
+
+def test_failed_verification_triggers_rollback() -> None:
+    from network_flight_recorder.lab_remediation import (
+        remediate_with_rollback,
+    )
+
+    calls = []
+
+    def fake_remediate():
+        calls.append("remediate")
+
+    def fake_verify():
+        calls.append("verify")
+        return False
+
+    def fake_rollback():
+        calls.append("rollback")
+
+    result = remediate_with_rollback(
+        remediate=fake_remediate,
+        verify=fake_verify,
+        rollback=fake_rollback,
+    )
+
+    assert result is False
+    assert calls == [
+        "remediate",
+        "verify",
+        "rollback",
+    ]
+
+
+
+def test_successful_verification_skips_rollback() -> None:
+    from network_flight_recorder.lab_remediation import (
+        remediate_with_rollback,
+    )
+
+    calls = []
+
+    def fake_remediate():
+        calls.append("remediate")
+
+    def fake_verify():
+        calls.append("verify")
+        return True
+
+    def fake_rollback():
+        calls.append("rollback")
+
+    result = remediate_with_rollback(
+        remediate=fake_remediate,
+        verify=fake_verify,
+        rollback=fake_rollback,
+    )
+
+    assert result is True
+    assert calls == [
+        "remediate",
+        "verify",
+    ]

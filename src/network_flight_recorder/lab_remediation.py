@@ -150,3 +150,21 @@ def build_remediation_report(
             "",
         ]
     )
+
+
+def remediate_with_rollback(
+    *,
+    remediate,
+    verify,
+    rollback,
+) -> bool:
+    """Run remediation, verify it, and roll back if verification fails."""
+    remediate()
+
+    if verify():
+        return True
+
+    rollback()
+    return False
+
+
