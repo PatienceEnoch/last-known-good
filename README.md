@@ -12,6 +12,8 @@ Network Flight Recorder (NFR) is a local-first Linux troubleshooting and observa
 
 Core diagnosis stays local. AWS adds durable storage and operational visibility, but NFR does not depend on cloud connectivity to investigate an outage that may have broken that connectivity in the first place.
 
+**New to NFR?** Read the [User Guide](docs/user-guide.md) for installation, first-run steps, command examples, monitoring, Docker demonstrations, AWS integration, and troubleshooting.
+
 ---
 
 ## What it records
