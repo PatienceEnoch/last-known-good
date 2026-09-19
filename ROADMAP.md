@@ -83,4 +83,4 @@
 - [x] Document safety boundaries and limitations
 - [x] Update the validated demonstration records
 - [x] Review repository for stale documentation
-- [ ] Tag a portfolio-ready release
+- [x] Tag a portfolio-ready release

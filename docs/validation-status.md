@@ -69,9 +69,7 @@ Run the demonstration with:
 
 ## Validation still outstanding
 
-The remaining portfolio-release item is:
-
-- Portfolio release tag
+No portfolio-release validation items remain outstanding for v0.1.0.
 
 The earlier 11-test milestone remains available in the
 [historical Phase 2 validation record](validated-demo.md).
