@@ -511,6 +511,12 @@ The project is meant to make troubleshooting clearer without giving automation u
 
 ---
 
+---
+
+## Related architecture notes
+
+I document the design lessons behind this project in my [Cloud Network Architecture Journal](https://github.com/PatienceEnoch/Cloud_Network_Architecture_Journal), including [local-first observability](https://github.com/PatienceEnoch/Cloud_Network_Architecture_Journal/blob/main/cloud/failure-domains-and-local-first-observability.md) and [guarded remediation](https://github.com/PatienceEnoch/Cloud_Network_Architecture_Journal/blob/main/cloud/guarded-remediation-and-rollback.md).
+
 ## Author
 
 **Ashley “Patience” Hopkins**
