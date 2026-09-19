@@ -5,8 +5,8 @@ requires a live demonstration.
 
 ## Validation date and revision
 
-- Date: September 18, 2026 (UTC)
-- Revision reviewed: `2977d32`
+- Date: September 19, 2026 (UTC)
+- Revision reviewed: `59cbbe9`
 - Environment for local Python checks: clean repository checkout, Python 3.12
 
 ## Automated application validation
@@ -48,8 +48,8 @@ lab execution → post-change snapshot → verification → report
 
 ## GitHub Actions validation
 
-The `CI and Security` workflow for revision `2977d32` completed successfully in
-[run 35379576163](https://github.com/PatienceEnoch/network-flight-recorder/actions/runs/35379576163).
+The `CI and Security` workflow for revision `59cbbe9` completed successfully in
+[run 35407965306](https://github.com/PatienceEnoch/network-flight-recorder/actions/runs/35407965306).
 
 All three jobs passed:
 
@@ -69,9 +69,8 @@ Run the demonstration with:
 
 ## Validation still outstanding
 
-The remaining portfolio-release items are:
+The remaining portfolio-release item is:
 
-- Final watch-mode screenshots
 - Portfolio release tag
 
 The earlier 11-test milestone remains available in the
