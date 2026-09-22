@@ -4,7 +4,7 @@
 
 Network outages are easy to notice and harder to reconstruct. By the time troubleshooting starts, the route, resolver state, interface condition, or latency change that mattered may already be gone.
 
-LastKnownGood (LastKnownGood) is a local-first Linux troubleshooting and observability tool built to preserve that evidence. It records a known-good state, detects meaningful changes, correlates related symptoms, tracks incidents through recovery, and produces evidence-backed reports.
+LastKnownGood is a local-first Linux troubleshooting and observability tool built to preserve that evidence. The name comes from its central idea: keep a trusted baseline of the network's last known good state, then compare against it when something changes. It detects meaningful changes, correlates related symptoms, tracks incidents through recovery, and produces evidence-backed reports.
 
 **Healthy state → change → failure → evidence → diagnosis → recovery**
 
