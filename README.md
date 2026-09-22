@@ -8,7 +8,7 @@ LastKnownGood is a local-first Linux troubleshooting and observability tool buil
 
 **Healthy state → change → failure → evidence → diagnosis → recovery**
 
-[![CI and Security](https://github.com/PatienceEnoch/network-flight-recorder/actions/workflows/test.yml/badge.svg)](https://github.com/PatienceEnoch/network-flight-recorder/actions/workflows/test.yml)
+[![CI and Security](https://github.com/PatienceEnoch/last-known-good/actions/workflows/test.yml/badge.svg)](https://github.com/PatienceEnoch/last-known-good/actions/workflows/test.yml)
 
 Core diagnosis stays local. AWS adds durable storage and operational visibility, but LastKnownGood does not depend on cloud connectivity to investigate an outage that may have broken that connectivity in the first place.
 
