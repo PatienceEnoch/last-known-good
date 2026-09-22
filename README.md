@@ -1,18 +1,18 @@
-# Network Flight Recorder
+# LastKnownGood
 
-> **A black box for your network.**
+> **Capture the last known good state. Follow the evidence when it changes.**
 
 Network outages are easy to notice and harder to reconstruct. By the time troubleshooting starts, the route, resolver state, interface condition, or latency change that mattered may already be gone.
 
-Network Flight Recorder (NFR) is a local-first Linux troubleshooting and observability tool built to preserve that evidence. It records a known-good state, detects meaningful changes, correlates related symptoms, tracks incidents through recovery, and produces evidence-backed reports.
+LastKnownGood (LastKnownGood) is a local-first Linux troubleshooting and observability tool built to preserve that evidence. It records a known-good state, detects meaningful changes, correlates related symptoms, tracks incidents through recovery, and produces evidence-backed reports.
 
 **Healthy state → change → failure → evidence → diagnosis → recovery**
 
 [![CI and Security](https://github.com/PatienceEnoch/network-flight-recorder/actions/workflows/test.yml/badge.svg)](https://github.com/PatienceEnoch/network-flight-recorder/actions/workflows/test.yml)
 
-Core diagnosis stays local. AWS adds durable storage and operational visibility, but NFR does not depend on cloud connectivity to investigate an outage that may have broken that connectivity in the first place.
+Core diagnosis stays local. AWS adds durable storage and operational visibility, but LastKnownGood does not depend on cloud connectivity to investigate an outage that may have broken that connectivity in the first place.
 
-**New to NFR?** Read the [User Guide](docs/user-guide.md) for installation, first-run steps, command examples, monitoring, Docker demonstrations, AWS integration, and troubleshooting.
+**New to LastKnownGood?** Read the [User Guide](docs/user-guide.md) for installation, first-run steps, command examples, monitoring, Docker demonstrations, AWS integration, and troubleshooting.
 
 ---
 
@@ -45,7 +45,7 @@ External probe failed
 DNS lookup failed
 ```
 
-Network Flight Recorder attempts to connect those symptoms.
+LastKnownGood attempts to connect those symptoms.
 
 For example:
 
@@ -138,7 +138,7 @@ The demonstration:
 
 The failure occurs only inside the disposable container.
 
-![Network Flight Recorder capturing and diagnosing the container outage](docs/assets/docker-demo-report-1.png)
+![LastKnownGood capturing and diagnosing the container outage](docs/assets/docker-demo-report-1.png)
 
 ![Completed incident report and returned terminal prompt](docs/assets/docker-demo-report-2.png)
 
@@ -161,7 +161,7 @@ evidence.
 
 ## What it can detect
 
-Network Flight Recorder can identify changes such as:
+LastKnownGood can identify changes such as:
 
 - Default route disappearance
 - Gateway or routing changes
@@ -196,7 +196,7 @@ Supporting evidence is included with the diagnosis.
 
 Network diagnostic data can expose sensitive infrastructure information.
 
-Network Flight Recorder supports deterministic pseudonymization of:
+LastKnownGood supports deterministic pseudonymization of:
 
 - Hostnames
 - IP addresses
@@ -240,7 +240,7 @@ nfr prune \
 
 ## AWS operations layer
 
-Network Flight Recorder also includes a Terraform-managed AWS operations layer.
+LastKnownGood also includes a Terraform-managed AWS operations layer.
 
 Current capabilities include:
 
@@ -289,14 +289,14 @@ lifecycle summary after recovery.
 The watch demonstration captures an outage, identifies the likely routing failure,
 detects recovery, closes the incident, and records the total outage duration.
 
-![NFR watch-mode incident lifecycle summary](docs/assets/watch-lifecycle-summary.png)
+![LastKnownGood watch-mode incident lifecycle summary](docs/assets/watch-lifecycle-summary.png)
 
 ### Multiple sequential incidents
 
 A continuous watch session was also validated across two separate outages. Each
 incident was independently opened, recovered, and closed.
 
-![NFR multiple sequential incidents](docs/assets/watch-multiple-incidents.png)
+![LastKnownGood multiple sequential incidents](docs/assets/watch-multiple-incidents.png)
 
 See the [CLI reference](docs/cli-reference.md) for all commands.
 
@@ -304,7 +304,7 @@ See the [CLI reference](docs/cli-reference.md) for all commands.
 
 ## Guarded recovery
 
-Network Flight Recorder is intentionally conservative about remediation.
+LastKnownGood is intentionally conservative about remediation.
 
 Detection and diagnosis can be automated.
 
@@ -377,7 +377,7 @@ This continuously checks the application, dependencies, and infrastructure confi
 
 ## Project roadmap
 
-### Phase 1 — Local Flight Recorder
+### Phase 1 — Local Evidence Capture
 
 Completed:
 
@@ -498,7 +498,7 @@ See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 
 ## Design constraints
 
-A few rules keep NFR from becoming an unsafe "self-healing network" demo:
+A few rules keep LastKnownGood from becoming an unsafe "self-healing network" demo:
 
 1. **Diagnosis must survive the outage.** Core analysis stays local.
 2. **Evidence comes before action.** Findings and remediation decisions are tied to observable state.
