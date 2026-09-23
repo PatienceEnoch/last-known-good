@@ -4,7 +4,7 @@
 
 Network outages are easy to notice and harder to reconstruct. By the time troubleshooting starts, the route, resolver state, interface condition, or latency change that mattered may already be gone.
 
-LastKnownGood is a local first Linux troubleshooting and observability tool built to preserve that evidence. The name comes from its central idea: keep a trusted baseline of the network's last known good state, then compare against it when something changes. It detects meaningful changes, correlates related symptoms, tracks incidents through recovery, and produces evidence-backed reports.
+LastKnownGood is a local first Linux troubleshooting and observability tool built to preserve that evidence. The name comes from its central idea: keep a trusted baseline of the network's last known good state, then compare against it when something changes. It detects meaningful changes, correlates related symptoms, tracks incidents through recovery, and produces evidence backed reports.
 
 **Healthy state → change → failure → evidence → diagnosis → recovery**
 
@@ -12,7 +12,7 @@ LastKnownGood is a local first Linux troubleshooting and observability tool buil
 
 Core diagnosis stays local. AWS adds durable storage and operational visibility, but LastKnownGood does not depend on cloud connectivity to investigate an outage that may have broken that connectivity in the first place.
 
-**New to LastKnownGood?** Read the [User Guide](docs/user-guide.md) for installation, first-run steps, command examples, monitoring, Docker demonstrations, AWS integration, and troubleshooting.
+**New to LastKnownGood?** Read the [User Guide](docs/user-guide.md) for installation, first run steps, command examples, monitoring, Docker demonstrations, AWS integration, and troubleshooting.
 
 ---
 
@@ -31,7 +31,7 @@ A snapshot can include:
 - Packet loss
 - MTU information
 
-The system can then compare a known-good baseline against the current state.
+The system can then compare a known good baseline against the current state.
 
 ---
 
@@ -78,7 +78,7 @@ source .venv/bin/activate
 python -m pip install -e ".[dev]"
 ```
 
-Capture a known-good baseline:
+Capture a known good baseline:
 
 ```bash
 nfr snapshot \
@@ -117,7 +117,7 @@ nfr compare tests/fixtures/healthy.json tests/fixtures/broken.json
 
 ## Reproducible outage lab
 
-The project includes a Docker-based failure-injection lab that creates a real networking failure inside an isolated container.
+The project includes a Docker based failure injection lab that creates a real networking failure inside an isolated container.
 
 Run:
 
@@ -147,13 +147,13 @@ This initial diagnostic demonstration is preserved as a
 [current validation record](docs/validation-status.md) covers the expanded
 test suite, guarded recovery, and CI checks.
 
-For the approval-gated recovery demonstration, run:
+For the approval gated recovery demonstration, run:
 
 ```bash
 ./lab/run_guarded_recovery.sh
 ```
 
-That workflow restores the known-good default route inside the container,
+That workflow restores the known good default route inside the container,
 verifies the result, and writes `reports/remediation.md` with before and after
 evidence.
 
@@ -240,13 +240,13 @@ nfr prune \
 
 ## AWS operations layer
 
-LastKnownGood also includes a Terraform-managed AWS operations layer.
+LastKnownGood also includes a Terraform managed AWS operations layer.
 
 Current capabilities include:
 
 - Private S3 evidence storage
 - S3 versioning
-- SSE-S3 encryption
+- SSE S3 encryption
 - Encryption in transit
 - Public access blocking
 - Redacted evidence upload
@@ -390,7 +390,7 @@ Completed:
 
 Completed:
 
-- Detect address, MTU, latency, and packet-loss changes
+- Detect address, MTU, latency, and packet loss changes
 - Detect DNS resolver behavior changes
 - Correlate related symptoms
 - Add snapshot redaction
@@ -498,7 +498,7 @@ See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 
 ## Design constraints
 
-A few rules keep LastKnownGood from becoming an unsafe "self-healing network" demo:
+A few rules keep LastKnownGood from becoming an unsafe "self healing network" demo:
 
 1. **Diagnosis must survive the outage.** Core analysis stays local.
 2. **Evidence comes before action.** Findings and remediation decisions are tied to observable state.
@@ -515,7 +515,7 @@ The project is meant to make troubleshooting clearer without giving automation u
 
 ## Related architecture notes
 
-I document the design lessons behind this project in my [Cloud Network Architecture Journal](https://github.com/PatienceEnoch/Cloud_Network_Architecture_Journal), including [local-first observability](https://github.com/PatienceEnoch/Cloud_Network_Architecture_Journal/blob/main/cloud/failure-domains-and-local-first-observability.md) and [guarded remediation](https://github.com/PatienceEnoch/Cloud_Network_Architecture_Journal/blob/main/cloud/guarded-remediation-and-rollback.md).
+I document the design lessons behind this project in my [Cloud Network Architecture Journal](https://github.com/PatienceEnoch/Cloud_Network_Architecture_Journal), including [local first observability](https://github.com/PatienceEnoch/Cloud_Network_Architecture_Journal/blob/main/cloud/failure-domains-and-local-first-observability.md) and [guarded remediation](https://github.com/PatienceEnoch/Cloud_Network_Architecture_Journal/blob/main/cloud/guarded-remediation-and-rollback.md).
 
 ## Author
 
