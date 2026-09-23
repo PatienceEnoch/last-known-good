@@ -4,7 +4,7 @@
 
 Network outages are easy to notice and harder to reconstruct. By the time troubleshooting starts, the route, resolver state, interface condition, or latency change that mattered may already be gone.
 
-LastKnownGood is a local-first Linux troubleshooting and observability tool built to preserve that evidence. The name comes from its central idea: keep a trusted baseline of the network's last known good state, then compare against it when something changes. It detects meaningful changes, correlates related symptoms, tracks incidents through recovery, and produces evidence-backed reports.
+LastKnownGood is a local first Linux troubleshooting and observability tool built to preserve that evidence. The name comes from its central idea: keep a trusted baseline of the network's last known good state, then compare against it when something changes. It detects meaningful changes, correlates related symptoms, tracks incidents through recovery, and produces evidence-backed reports.
 
 **Healthy state → change → failure → evidence → diagnosis → recovery**
 
@@ -134,7 +134,7 @@ The demonstration:
 5. Compares the healthy and broken states.
 6. Diagnoses the routing failure.
 7. Generates an incident report.
-8. Restores the Docker-managed network.
+8. Restores the Docker managed network.
 
 The failure occurs only inside the disposable container.
 
@@ -154,7 +154,7 @@ For the approval-gated recovery demonstration, run:
 ```
 
 That workflow restores the known-good default route inside the container,
-verifies the result, and writes `reports/remediation.md` with before-and-after
+verifies the result, and writes `reports/remediation.md` with before and after
 evidence.
 
 ---
@@ -248,7 +248,7 @@ Current capabilities include:
 - S3 versioning
 - SSE-S3 encryption
 - Encryption in transit
-- Public-access blocking
+- Public access blocking
 - Redacted evidence upload
 - CloudWatch health metrics
 - Incident summary storage
@@ -266,7 +266,7 @@ This keeps the AWS environment reproducible and managed as code.
 
 ## Monitoring and incident workflow
 
-Watch mode turns one-time snapshot comparison into an incident timeline. It can detect failure and recovery transitions, maintain incident state, preserve evidence, recover an open incident after restart, and write a final lifecycle summary.
+Watch mode turns one time snapshot comparison into an incident timeline. It can detect failure and recovery transitions, maintain incident state, preserve evidence, recover an open incident after restart, and write a final lifecycle summary.
 
 Start a bounded watch session with preserved snapshot history:
 
@@ -289,7 +289,7 @@ lifecycle summary after recovery.
 The watch demonstration captures an outage, identifies the likely routing failure,
 detects recovery, closes the incident, and records the total outage duration.
 
-![LastKnownGood watch-mode incident lifecycle summary](docs/assets/watch-lifecycle-summary.png)
+![LastKnownGood watch mode incident lifecycle summary](docs/assets/watch-lifecycle-summary.png)
 
 ### Multiple sequential incidents
 
@@ -313,15 +313,15 @@ Making changes to a network requires stronger safeguards.
 The recovery layer therefore uses:
 
 - Explicitly allowed remediation actions
-- Approval-required remediation plans
+- Approval required remediation plans
 - Human review before changes
 - Guardrails around supported actions
-- Automatic post-change verification
-- Before-and-after remediation reports
+- Automatic post change verification
+- Before and after remediation reports
 
 Execution is currently limited to the isolated Docker lab and one tightly
-scoped route-restoration action. The lab also demonstrates automatic rollback
-when post-remediation verification fails. Generic or production remediation
+scoped route restoration action. The lab also demonstrates automatic rollback
+when post remediation verification fails. Generic or production remediation
 is not implemented.
 
 ---
@@ -401,7 +401,7 @@ Completed:
 
 Completed:
 
-- Terraform-managed AWS infrastructure
+- Terraform managed AWS infrastructure
 - Private and encrypted S3 evidence storage
 - Redacted evidence upload
 - CloudWatch health metrics
@@ -413,7 +413,7 @@ Completed:
 
 Completed:
 
-- Approval-required remediation plans
+- Approval required remediation plans
 - Explicit action allowlist
 - Safety guardrails
 - Approved recovery execution in the isolated Docker lab
@@ -437,7 +437,7 @@ Completed:
 - Open and closed incident tracking
 - Restart recovery for persisted open incidents
 - Outage duration calculation
-- Final failure-to-recovery summaries
+- Final failure to recovery summaries
 
 Multiple sequential incidents have also been validated in one continuous
 watch session, with each outage independently opened, recovered, closed, and
@@ -465,7 +465,7 @@ See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 - Python
 - pytest
 - Ruff
-- Command-line application design
+- Command line application design
 - JSON
 - Git
 
