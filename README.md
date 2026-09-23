@@ -418,7 +418,7 @@ Completed:
 - Safety guardrails
 - Approved recovery execution in the isolated Docker lab
 - Automatic recovery verification
-- Before-and-after remediation reporting
+- Before and after remediation reporting
 - Rollback after failed recovery verification in the isolated Docker lab
 
 ### Phase 5 — Continuous Monitoring
