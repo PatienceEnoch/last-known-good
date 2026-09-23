@@ -179,13 +179,13 @@ LastKnownGood can identify changes such as:
 When multiple symptoms point to the same underlying problem, the report can lead with a correlated diagnosis such as:
 
 ```text
-Default gateway or routing failure — HIGH confidence
+Default gateway or routing failure: HIGH confidence
 ```
 
 or:
 
 ```text
-Local interface or link failure — HIGH confidence
+Local interface or link failure: HIGH confidence
 ```
 
 Supporting evidence is included with the diagnosis.
@@ -377,7 +377,7 @@ This continuously checks the application, dependencies, and infrastructure confi
 
 ## Project roadmap
 
-### Phase 1 — Local Evidence Capture
+### Phase 1: Local Evidence Capture
 
 Completed:
 
@@ -386,7 +386,7 @@ Completed:
 - Generate Markdown and JSON incident reports
 - Test common outage signatures
 
-### Phase 2 — Explainable Diagnosis
+### Phase 2: Explainable Diagnosis
 
 Completed:
 
@@ -397,7 +397,7 @@ Completed:
 - Add retention controls
 - Build a reproducible Docker outage lab
 
-### Phase 3 — AWS Operations Layer
+### Phase 3: AWS Operations Layer
 
 Completed:
 
@@ -409,7 +409,7 @@ Completed:
 - Minimal operational dashboard
 - CI security and infrastructure checks
 
-### Phase 4 — Guarded Recovery
+### Phase 4: Guarded Recovery
 
 Completed:
 
@@ -421,7 +421,7 @@ Completed:
 - Before and after remediation reporting
 - Rollback after failed recovery verification in the isolated Docker lab
 
-### Phase 5 — Continuous Monitoring
+### Phase 5: Continuous Monitoring
 
 Completed:
 
@@ -430,7 +430,7 @@ Completed:
 - Rolling snapshot retention
 - Protected incident evidence
 
-### Phase 6 — Incident Lifecycle
+### Phase 6: Incident Lifecycle
 
 Completed:
 
@@ -521,6 +521,6 @@ I document the design lessons behind this project in my [Cloud Network Architect
 
 **Ashley “Patience” Hopkins**
 
-WGU B.S. Cloud and Network Engineering — AWS Track
+WGU B.S. Cloud and Network Engineering, AWS Track
 
 CompTIA A+ · CompTIA Network+ · LPI Linux Essentials · ITIL 4 Foundation
